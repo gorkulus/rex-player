@@ -27,6 +27,13 @@ make dist RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
 rsync -a --delete dist/RexRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/
 ```
 
+## Smoke-test REX decoding
+
+```bash
+g++ -std=c++17 -O2 -Ithird_party/VelociLoops/include tools/rex_probe.cpp third_party/VelociLoops/src/velociloops.cpp -o build/rex_probe
+./build/rex_probe /path/to/file.rx2
+```
+
 ## Notes
 
 This is a hackathon/product-spike prototype: no extra audio dependencies beyond Rack SDK and vendored VelociLoops.

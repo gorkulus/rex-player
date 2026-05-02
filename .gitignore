@@ -1,0 +1,6 @@
+build/
+dist/
+plugin.so
+*.vcvplugin
+*.o
+*.d
