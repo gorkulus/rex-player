@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -296,7 +297,16 @@ struct RexPlayer : Module {
     bool loadFile(const std::string& path) {
         std::string error;
         const uint64_t generation = nextGeneration.fetch_add(1, std::memory_order_relaxed);
-        std::shared_ptr<RexBuffer> loaded = loadRexBufferFromFile(path, generation, error);
+        std::shared_ptr<RexBuffer> loaded;
+        try {
+            loaded = loadRexBufferFromFile(path, generation, error);
+        }
+        catch (const std::exception& e) {
+            error = std::string("load failed: ") + e.what();
+        }
+        catch (...) {
+            error = "load failed: unknown exception";
+        }
         if (!loaded) {
             lastStatus = error;
             WARN("RexRack: failed to load %s: %s", path.c_str(), error.c_str());
@@ -310,7 +320,8 @@ struct RexPlayer : Module {
             status << ", " << loaded->tempoBpm << " BPM";
         }
         lastStatus = status.str();
-        stepSlice = 0;
+        // Do not touch process-owned step/voice state from the UI thread here.
+        // The audio thread resets it when it observes the new buffer generation.
         selectedSlice.store(0, std::memory_order_relaxed);
         lastTriggeredSlice.store(-1, std::memory_order_relaxed);
         std::atomic_store_explicit(&buffer, std::static_pointer_cast<const RexBuffer>(loaded), std::memory_order_release);
@@ -443,6 +454,7 @@ struct RexPlayer : Module {
         int shownSlice = sliceForChannel(*b, 0, channelCount);
         selectedSlice.store(shownSlice, std::memory_order_relaxed);
 
+        bool anyStepTrigger = false;
         for (int c = 0; c < channelCount; ++c) {
             const float trigV = inputs[TRIG_INPUT].isConnected() ? inputs[TRIG_INPUT].getPolyVoltage(static_cast<uint8_t>(c)) : 0.f;
             const float stepV = inputs[STEP_TRIG_INPUT].isConnected() ? inputs[STEP_TRIG_INPUT].getPolyVoltage(static_cast<uint8_t>(c)) : 0.f;
@@ -455,8 +467,11 @@ struct RexPlayer : Module {
             const float pitchV = inputs[PITCH_INPUT].isConnected() ? inputs[PITCH_INPUT].getPolyVoltage(static_cast<uint8_t>(c)) : 0.f;
             triggerSlice(*b, slice, pitchV, usePolyMode, channelCount);
             if (step) {
-                stepSlice = (stepSlice + 1) % static_cast<int>(b->slices.size());
+                anyStepTrigger = true;
             }
+        }
+        if (anyStepTrigger) {
+            stepSlice = (stepSlice + 1) % static_cast<int>(b->slices.size());
         }
 
         float outL = 0.f;
