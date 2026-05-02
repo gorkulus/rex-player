@@ -3,7 +3,7 @@
   "name": "Rex Rack",
   "version": "0.1.0",
   "license": "Unlicense",
-  "brand": "gorkulus / Hermes",
+  "brand": "Rex Rack",
   "author": "gorkulus + Vector",
   "authorEmail": "",
   "authorUrl": "",
@@ -15,7 +15,7 @@
   "modules": [
     {
       "slug": "RexPlayer",
-      "name": "REX Player",
+      "name": "REX Rack Player",
       "description": "Slice-triggering REX/RX2 sampler/player using VelociLoops.",
       "tags": ["Sampler", "Drum", "Polyphonic", "External"]
     }

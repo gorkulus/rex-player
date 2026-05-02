@@ -2,7 +2,13 @@
 
 A one-shot VCV Rack 2 plugin prototype for triggering REX/RX2 slices directly in Rack.
 
-## Module: REX Player
+## Rack browser
+
+- Brand: `Rex Rack`
+- Module: `REX Rack Player`
+- Tags: `Sampler`, `Drum`, `Polyphonic`, `External`
+
+## Module: REX Rack Player
 
 - Loads `.rx2`, `.rex`, and `.rcy` files using vendored VelociLoops.
 - Displays an overview waveform, slice markers, selected slice, and playback cursor.
@@ -25,7 +31,11 @@ make RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
 ```bash
 make dist RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
 rsync -a --delete dist/RexRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/
+setfacl -Rm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack
+setfacl -Rdm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack
 ```
+
+Rack scans plugins at startup, so restart Rack after installing/updating the plugin.
 
 ## Smoke-test REX decoding
 
