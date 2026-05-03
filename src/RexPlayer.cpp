@@ -840,7 +840,7 @@ struct RexPlayer : Module {
     }
 };
 
-struct RexPanel : OpaqueWidget {
+struct RexPanel : TransparentWidget {
     void draw(const DrawArgs& args) override {
         NVGcontext* vg = args.vg;
         nvgBeginPath(vg);
@@ -876,7 +876,7 @@ struct RexPanel : OpaqueWidget {
     }
 };
 
-struct RexWaveformDisplay : OpaqueWidget {
+struct RexWaveformDisplay : TransparentWidget {
     RexPlayer* module = nullptr;
 
     explicit RexWaveformDisplay(RexPlayer* module) : module(module) {}
@@ -993,7 +993,7 @@ struct RexWaveformDisplay : OpaqueWidget {
     }
 };
 
-struct RexTextLabel : Widget {
+struct RexTextLabel : TransparentWidget {
     std::string text;
     float fontSize = 8.f;
     NVGcolor color = nvgRGB(170, 184, 210);
