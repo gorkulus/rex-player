@@ -1,6 +1,10 @@
 # Rex Rack
 
-A one-shot VCV Rack 2 plugin prototype for triggering REX/RX2 slices directly in Rack.
+Rex Rack is a VCV Rack 2 plugin for playing REX-family breakbeat loops directly inside a modular patch.
+
+It loads `.rx2`, `.rex`, and `.rcy` files with vendored [VelociLoops](https://github.com/kunitoki/VelociLoops), displays the waveform and slice markers, maps slices to V/Oct notes, and can also run as a clocked REX timing sequencer.
+
+This is a hackathon release. It is already useful, but it is still young software. Save your Rack patches before stress-testing weird files.
 
 ## Rack browser
 
@@ -8,51 +12,89 @@ A one-shot VCV Rack 2 plugin prototype for triggering REX/RX2 slices directly in
 - Module: `REX Rack Player`
 - Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`, `Polyphonic`, `External`
 
-## Module: REX Rack Player
+## What it does
 
-- Loads `.rx2`, `.rex`, and `.rcy` files using vendored VelociLoops.
+- Loads `.rx2`, `.rex`, and `.rcy` loop files.
 - Displays an overview waveform, slice markers, selected slice, and playback cursor.
-- Slice V/Oct input maps Rack V/OCT pitches to MIDI note numbers (`0V = C4/MIDI 60`). Default first slice is C2/MIDI 36, matching the local rx2-to-midi/REX convention. Change in context menu.
-- Pitch V/Oct input repitches playback (`0V = native rate`, `+1V = octave up`, `-1V = octave down`).
-- Trigger input fires the current slice.
-- Step trigger fires current slice then advances the internal slice pointer.
-- Clock input expects x4/16th-note clock pulses. REX PPQ timing uses 15360 ticks/bar, so each clock pulse advances 960 PPQ ticks. The first ever clock interval is used to learn tempo; once a period has been measured, resets/restarts can emit off-grid REX slice timing accurately from the next clock edge.
-- Reset trigger resets the clocked sequence to the first slice.
-- Run switch defaults on; Run input toggles the switch on rising trigger.
-- Clocked sequence outputs:
-  - `SEQ` V/Oct output holds the currently scheduled slice note.
-  - `TRIG` outputs a short 10V pulse when a sequenced slice fires.
-  - `GATE` outputs 10V from slice start until the next REX slice position.
-- Internal normaling: with no trigger cable patched, the clocked sequencer internally triggers playback. With no slice cable patched, sequenced playback uses the clocked slice. Patching either input breaks that input's normal; sequence outputs continue to emit for external rerouting.
-- External trigger+slice input can cue the clocked sequencer to that slice so it continues from that slice's original REX timing.
-- Mono mode chokes active playback with a short crossfade to avoid clicks.
-- Polyphonic input cables enable a voice pool; channel count sets voice count, and triggers distribute round-robin through the pool.
-- L/R master outputs.
+- Plays selected slices from trigger/gate/MIDI-CV style patches.
+- Repitches playback with Rack V/Oct pitch tracking.
+- Chokes active playback in mono mode with a short fade to avoid clicks.
+- Uses a voice pool when driven by polyphonic cables.
+- Follows original REX slice timing from an external 16th-note clock.
+- Outputs sequenced slice V/Oct, trigger, and gate signals for modular rerouting.
+
+## Quick start
+
+1. Add `REX Rack Player` from the `Rex Rack` brand in Rack's module browser.
+2. Right-click the module and choose `Load REX/RX2/RCY...`.
+3. Patch `L` and `R` to your mixer.
+4. For immediate clocked playback, patch a 16th-note clock into `CLK`. Leave `SLICE` and `TRIG` unpatched so the internal normaling can drive playback.
+5. Optional: patch reset into `RST` and use `RUN` to start/stop the sequencer.
+
+For manual/MIDI-style slice triggering:
+
+1. Patch a V/Oct source into `SLICE`.
+2. Patch a trigger or gate into `TRIG`.
+3. Set the first-slice MIDI note from the context menu if needed. The default is C2 / MIDI 36.
+4. Patch another V/Oct source into `PITCH` if you want independent transposition.
+
+## Documentation
+
+- [Manual](docs/manual.md)
+- [Release checklist](docs/release-checklist.md)
+- [Legal and licensing notes](docs/legal-and-licensing.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
+- [Changelog](CHANGELOG.md)
 
 ## Build
+
+Rack SDK 2.6.6 was used for the hackathon build.
 
 ```bash
 make RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
 ```
 
-## Install for local Rack
+## Package
 
 ```bash
 make dist RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
+```
+
+This creates `dist/RexRack/` and `dist/RexRack-<version>-lin-x64.vcvplugin`.
+
+## Install for local Rack
+
+```bash
 rsync -a --delete dist/RexRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/
 setfacl -Rm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack
 setfacl -Rdm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack
 ```
 
-Rack scans plugins at startup, so restart Rack after installing/updating the plugin.
+Rack scans plugins at startup, so restart Rack after installing or updating the plugin.
+
+## Smoke-test plugin loading
+
+```bash
+LD_LIBRARY_PATH=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6 python3 - <<'PY'
+import ctypes, os
+sdk = '/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6'
+plugin = '/home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/plugin.so'
+ctypes.CDLL(os.path.join(sdk, 'libRack.so'), mode=ctypes.RTLD_GLOBAL)
+ctypes.CDLL(plugin)
+print('dlopen ok')
+PY
+```
 
 ## Smoke-test REX decoding
 
 ```bash
+mkdir -p build
 g++ -std=c++17 -O2 -Ithird_party/VelociLoops/include tools/rex_probe.cpp third_party/VelociLoops/src/velociloops.cpp -o build/rex_probe
 ./build/rex_probe /path/to/file.rx2
 ```
 
-## Notes
+## License
 
-This is a hackathon/product-spike prototype: no extra audio dependencies beyond Rack SDK and vendored VelociLoops.
+Rex Rack is released under the MIT License. VelociLoops is vendored under The Unlicense. See [LICENSE](LICENSE), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [docs/legal-and-licensing.md](docs/legal-and-licensing.md).
+
+REX and REX2 are file formats associated with Propellerhead/Reason Studios. Rex Rack is an independent project and is not endorsed by Propellerhead/Reason Studios.

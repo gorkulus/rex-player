@@ -1,8 +1,8 @@
 {
   "slug": "RexRack",
   "name": "Rex Rack",
-  "version": "2.0.2",
-  "license": "Unlicense",
+  "version": "2.0.3",
+  "license": "MIT",
   "brand": "Rex Rack",
   "author": "gorkulus + Vector",
   "authorEmail": "",
