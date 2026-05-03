@@ -2,6 +2,10 @@
 
 This plugin uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
 
+## 2.0.7 - RUN switch alignment
+
+- Move the manual RUN switch to the first-row fourth grid position, directly above the PITCH input.
+
 ## 2.0.6 - panel output-section refinement
 
 - Make the output-section panel shorter, darker, borderless, and return its legends to light text.

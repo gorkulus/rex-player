@@ -95,11 +95,11 @@ Then test manually in Rack:
 - [ ] Tag the release:
 
 ```bash
-git tag v2.0.6
+git tag v2.0.7
 git push origin master --tags
 ```
 
-- [ ] Attach `dist/SoundVisions-REXRack-2.0.6-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
+- [ ] Attach `dist/SoundVisions-REXRack-2.0.7-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
 - [ ] Include release notes from `CHANGELOG.md`.
 
 ## VCV Library submission later

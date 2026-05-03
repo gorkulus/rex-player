@@ -1148,7 +1148,7 @@ struct RexPlayerWidget : ModuleWidget {
         const float xB = 30.f;
         const float xC = 46.f;
         const float xPitch = 62.f;
-        const float xRunSwitch = 82.f;
+        const float xRunSwitch = xPitch;
         const float xL = 82.f;
         const float xR = 92.f;
         const float row1Y = 70.f;
