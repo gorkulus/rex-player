@@ -10,8 +10,8 @@ This is a hackathon release. It is already useful, but it is still young softwar
 
 - Brand: `Sound Visions`
 - Module: `REX Player`
-- Plugin slug/package: `RexRack`
-- Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`, `External`
+- Plugin slug/package: `SoundVisions-REXRack`
+- Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`
 
 ## What it does
 
@@ -61,14 +61,14 @@ make RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
 make dist RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
 ```
 
-This creates `dist/RexRack/` and `dist/RexRack-<version>-lin-x64.vcvplugin`.
+This creates `dist/SoundVisions-REXRack/` and `dist/SoundVisions-REXRack-<version>-lin-x64.vcvplugin`.
 
 ## Install for local Rack
 
 ```bash
-rsync -a --delete dist/RexRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/
-setfacl -Rm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack
-setfacl -Rdm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack
+rsync -a --delete dist/SoundVisions-REXRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
+setfacl -Rm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack
+setfacl -Rdm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack
 ```
 
 Rack scans plugins at startup, so restart Rack after installing or updating the plugin.
@@ -79,7 +79,7 @@ Rack scans plugins at startup, so restart Rack after installing or updating the 
 LD_LIBRARY_PATH=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6 python3 - <<'PY'
 import ctypes, os
 sdk = '/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6'
-plugin = '/home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/plugin.so'
+plugin = '/home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/plugin.so'
 ctypes.CDLL(os.path.join(sdk, 'libRack.so'), mode=ctypes.RTLD_GLOBAL)
 ctypes.CDLL(plugin)
 print('dlopen ok')

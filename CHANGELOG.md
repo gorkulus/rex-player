@@ -1,6 +1,14 @@
 # Changelog
 
-RexRack uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
+This plugin uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
+
+## 2.0.5 - final pre-release polish
+
+- Change pre-release plugin slug to `SoundVisions-REXRack` for VCV naming conventions.
+- Remove the `External` Rack browser tag.
+- Tighten lower-panel jack layout and output-section visuals.
+- Rename the sequenced V/Oct output panel label from `SEQ` to `SLICE`.
+- Update waveform slice marker color and truncate long REX filenames with a hover tooltip.
 
 ## 2.0.4 - Sound Visions naming
 

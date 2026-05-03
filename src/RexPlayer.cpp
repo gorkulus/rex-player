@@ -375,7 +375,7 @@ struct RexPlayer : Module {
         }
         if (!loaded) {
             lastStatus = error;
-            WARN("RexRack: failed to load %s: %s", path.c_str(), error.c_str());
+            WARN("SoundVisions-REXRack: failed to load %s: %s", path.c_str(), error.c_str());
             return false;
         }
 
@@ -861,12 +861,37 @@ struct RexPanel : TransparentWidget {
         nvgStrokeWidth(vg, 1.f);
         nvgStroke(vg);
 
+        // Output section: muted Rack-dark-mode grey with dark legends drawn above it.
+        const Vec outPos = mm2px(Vec(7.f, 96.f));
+        const Vec outSize = mm2px(Vec(90.f, 27.f));
+        nvgBeginPath(vg);
+        nvgRoundedRect(vg, outPos.x, outPos.y, outSize.x, outSize.y, 7.f);
+        nvgFillColor(vg, nvgRGB(108, 120, 132));
+        nvgFill(vg);
+        nvgStrokeColor(vg, nvgRGB(156, 172, 188));
+        nvgStrokeWidth(vg, 1.f);
+        nvgStroke(vg);
+
+        // Visual normaling hints from playback inputs to their sequenced outputs.
+        const float normY1 = mm2px(Vec(0.f, 92.f)).y;
+        const float normY2 = mm2px(Vec(0.f, 97.f)).y;
+        const float normXs[] = {mm2px(Vec(14.f, 0.f)).x, mm2px(Vec(30.f, 0.f)).x};
+        for (float x : normXs) {
+            nvgBeginPath(vg);
+            nvgMoveTo(vg, x, normY1);
+            nvgLineTo(vg, x, normY2);
+            nvgStrokeColor(vg, nvgRGB(62, 98, 128));
+            nvgStrokeWidth(vg, 1.6f);
+            nvgLineCap(vg, NVG_ROUND);
+            nvgStroke(vg);
+        }
+
         auto font = APP->window->loadFont(asset::system("res/fonts/ShareTechMono-Regular.ttf"));
         if (font) {
             nvgFontFaceId(vg, font->handle);
         }
         nvgFillColor(vg, nvgRGB(235, 241, 255));
-        nvgFontSize(vg, 22.f);
+        nvgFontSize(vg, 18.f);
         nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
         nvgText(vg, box.size.x * 0.5f, 18.f, "REX PLAYER", nullptr);
 
@@ -878,18 +903,91 @@ struct RexPanel : TransparentWidget {
 
 struct RexWaveformDisplay : TransparentWidget {
     RexPlayer* module = nullptr;
+    bool titleHovered = false;
+    bool titleWasTruncated = false;
 
     explicit RexWaveformDisplay(RexPlayer* module) : module(module) {}
 
-    void drawText(NVGcontext* vg, const char* text, float x, float y, float size, NVGcolor color, int align = NVG_ALIGN_LEFT | NVG_ALIGN_TOP) {
+    void setTextFont(NVGcontext* vg, float size) {
         auto font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
         if (font) {
             nvgFontFaceId(vg, font->handle);
         }
         nvgFontSize(vg, size);
+    }
+
+    float measureTextWidth(NVGcontext* vg, const std::string& text) {
+        float bounds[4] = {};
+        nvgTextBounds(vg, 0.f, 0.f, text.c_str(), nullptr, bounds);
+        return bounds[2] - bounds[0];
+    }
+
+    std::string truncateText(NVGcontext* vg, const std::string& text, float maxWidth) {
+        if (text.empty() || measureTextWidth(vg, text) <= maxWidth) {
+            return text;
+        }
+        const std::string ellipsis = "...";
+        if (measureTextWidth(vg, ellipsis) > maxWidth) {
+            return ellipsis;
+        }
+        size_t lo = 0;
+        size_t hi = text.size();
+        while (lo < hi) {
+            const size_t mid = (lo + hi + 1) / 2;
+            const std::string candidate = text.substr(0, mid) + ellipsis;
+            if (measureTextWidth(vg, candidate) <= maxWidth) {
+                lo = mid;
+            }
+            else {
+                hi = mid - 1;
+            }
+        }
+        return text.substr(0, lo) + ellipsis;
+    }
+
+    void drawText(NVGcontext* vg, const char* text, float x, float y, float size, NVGcolor color, int align = NVG_ALIGN_LEFT | NVG_ALIGN_TOP) {
+        setTextFont(vg, size);
         nvgTextAlign(vg, align);
         nvgFillColor(vg, color);
         nvgText(vg, x, y, text, nullptr);
+    }
+
+    void drawTitleTooltip(NVGcontext* vg, const std::string& title, float w) {
+        const float x = 8.f;
+        const float y = 27.f;
+        const float pad = 6.f;
+        const float textW = w - 2.f * (x + pad);
+        setTextFont(vg, 10.5f);
+        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+        float bounds[4] = {};
+        nvgTextBoxBounds(vg, x + pad, y + pad, textW, title.c_str(), nullptr, bounds);
+        const float h = clampf(bounds[3] - bounds[1] + pad * 2.f, 24.f, 64.f);
+
+        nvgBeginPath(vg);
+        nvgRoundedRect(vg, x, y, w - 2.f * x, h, 4.f);
+        nvgFillColor(vg, nvgRGBA(12, 18, 26, 235));
+        nvgFill(vg);
+        nvgStrokeColor(vg, nvgRGB(74, 96, 124));
+        nvgStrokeWidth(vg, 1.f);
+        nvgStroke(vg);
+
+        nvgSave(vg);
+        nvgIntersectScissor(vg, x + pad, y + pad, textW, h - 2.f * pad);
+        nvgFillColor(vg, nvgRGB(232, 238, 255));
+        nvgTextBox(vg, x + pad, y + pad, textW, title.c_str(), nullptr);
+        nvgRestore(vg);
+    }
+
+    void onHover(const HoverEvent& e) override {
+        const bool inTitle = e.pos.x >= 8.f && e.pos.x <= box.size.x - 8.f && e.pos.y >= 4.f && e.pos.y <= 23.f;
+        titleHovered = titleWasTruncated && inTitle;
+        if (titleHovered) {
+            e.consume(this);
+        }
+    }
+
+    void onLeave(const LeaveEvent& e) override {
+        titleHovered = false;
     }
 
     void draw(const DrawArgs& args) override {
@@ -913,12 +1011,16 @@ struct RexWaveformDisplay : TransparentWidget {
         nvgStroke(vg);
 
         if (!module) {
+            titleWasTruncated = false;
+            titleHovered = false;
             drawText(vg, "Browser preview", 10.f, 10.f, 12.f, nvgRGB(180, 190, 210));
             return;
         }
 
         std::shared_ptr<const RexBuffer> b = module->getBuffer();
         if (!b || b->slices.empty()) {
+            titleWasTruncated = false;
+            titleHovered = false;
             drawText(vg, "Right-click module > Load REX/RX2", 12.f, 12.f, 13.f, nvgRGB(185, 198, 220));
             drawText(vg, "Slice V/OCT: first slice C2 by default", 12.f, 33.f, 10.f, nvgRGB(120, 134, 160));
             drawText(vg, "TRIG fires, STEP fires+advances", 12.f, 49.f, 10.f, nvgRGB(120, 134, 160));
@@ -950,7 +1052,7 @@ struct RexWaveformDisplay : TransparentWidget {
             nvgBeginPath(vg);
             nvgMoveTo(vg, x, 23.f);
             nvgLineTo(vg, x, h - 8.f);
-            nvgStrokeColor(vg, nvgRGBA(255, 210, 86, 115));
+            nvgStrokeColor(vg, nvgRGBA(30, 112, 200, 150));
             nvgStrokeWidth(vg, 1.f);
             nvgStroke(vg);
         }
@@ -978,7 +1080,13 @@ struct RexWaveformDisplay : TransparentWidget {
         }
 
         const std::string title = b->displayName;
-        drawText(vg, title.c_str(), 10.f, 8.f, 11.f, nvgRGB(232, 238, 255));
+        setTextFont(vg, 11.f);
+        const std::string visibleTitle = truncateText(vg, title, w - 20.f);
+        titleWasTruncated = visibleTitle != title;
+        if (!titleWasTruncated) {
+            titleHovered = false;
+        }
+        drawText(vg, visibleTitle.c_str(), 10.f, 8.f, 11.f, nvgRGB(232, 238, 255));
 
         std::ostringstream meta;
         meta << b->slices.size() << " slices  " << b->sampleRate << " Hz";
@@ -990,6 +1098,10 @@ struct RexWaveformDisplay : TransparentWidget {
         std::ostringstream note;
         note << "base " << midiNoteName(module->baseMidiNote.load(std::memory_order_relaxed));
         drawText(vg, note.str().c_str(), w - 10.f, h - 20.f, 10.f, nvgRGB(164, 178, 206), NVG_ALIGN_RIGHT | NVG_ALIGN_TOP);
+
+        if (titleHovered && titleWasTruncated) {
+            drawTitleTooltip(vg, title, w);
+        }
     }
 };
 
@@ -1044,37 +1156,51 @@ struct RexPlayerWidget : ModuleWidget {
         addParam(createParamCentered<CKSS>(mm2px(Vec(95, 12)), module, RexPlayer::RUN_PARAM));
         addCenteredLabel("RUN", Vec(95, 19), 7.2f, nvgRGB(116, 255, 150));
 
-        // Inputs
-        addCenteredLabel("CLK", Vec(8, 65));
-        addCenteredLabel("RST", Vec(22, 65));
-        addCenteredLabel("RUN", Vec(36, 65));
-        addCenteredLabel("SLICE", Vec(50, 65));
-        addCenteredLabel("PITCH", Vec(64, 65));
-        addCenteredLabel("TRIG", Vec(78, 65));
-        addCenteredLabel("STEP", Vec(92, 65));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(8, 72)), module, RexPlayer::CLOCK_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(22, 72)), module, RexPlayer::RESET_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(36, 72)), module, RexPlayer::RUN_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(50, 72)), module, RexPlayer::SLICE_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(64, 72)), module, RexPlayer::PITCH_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(78, 72)), module, RexPlayer::TRIG_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(92, 72)), module, RexPlayer::STEP_TRIG_INPUT));
+        const float xA = 14.f;
+        const float xB = 30.f;
+        const float xC = 46.f;
+        const float xPitch = 78.f;
+        const float xL = 82.f;
+        const float xR = 92.f;
+        const float row1Y = 70.f;
+        const float row2Y = 86.f;
+        const float row3Y = 108.f;
+        const NVGcolor inputLabel = nvgRGB(170, 184, 210);
+        const NVGcolor outputLabel = nvgRGB(24, 30, 38);
+
+        // Sequencer utility inputs
+        addCenteredLabel("CLK", Vec(xA, row1Y - 7.f), 7.2f, inputLabel);
+        addCenteredLabel("RST", Vec(xB, row1Y - 7.f), 7.2f, inputLabel);
+        addCenteredLabel("RUN", Vec(xC, row1Y - 7.f), 7.2f, inputLabel);
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xA, row1Y)), module, RexPlayer::CLOCK_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xB, row1Y)), module, RexPlayer::RESET_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xC, row1Y)), module, RexPlayer::RUN_INPUT));
+
+        // Playback inputs
+        addCenteredLabel("SLICE", Vec(xA, row2Y - 7.f), 7.2f, inputLabel);
+        addCenteredLabel("TRIG", Vec(xB, row2Y - 7.f), 7.2f, inputLabel);
+        addCenteredLabel("STEP", Vec(xC, row2Y - 7.f), 7.2f, inputLabel);
+        addCenteredLabel("PITCH", Vec(xPitch, row2Y - 7.f), 7.2f, inputLabel);
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xA, row2Y)), module, RexPlayer::SLICE_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xB, row2Y)), module, RexPlayer::TRIG_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xC, row2Y)), module, RexPlayer::STEP_TRIG_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xPitch, row2Y)), module, RexPlayer::PITCH_INPUT));
 
         // Outputs
-        addCenteredLabel("SEQ", Vec(18, 99));
-        addCenteredLabel("TRIG", Vec(38, 99));
-        addCenteredLabel("GATE", Vec(58, 99));
-        addCenteredLabel("L", Vec(78, 99));
-        addCenteredLabel("R", Vec(94, 99));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(18, 106)), module, RexPlayer::SEQ_VOCT_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(38, 106)), module, RexPlayer::SEQ_TRIG_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(58, 106)), module, RexPlayer::SEQ_GATE_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(78, 106)), module, RexPlayer::LEFT_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(94, 106)), module, RexPlayer::RIGHT_OUTPUT));
+        addCenteredLabel("SLICE", Vec(xA, row3Y - 7.f), 7.2f, outputLabel);
+        addCenteredLabel("TRIG", Vec(xB, row3Y - 7.f), 7.2f, outputLabel);
+        addCenteredLabel("GATE", Vec(xC, row3Y - 7.f), 7.2f, outputLabel);
+        addCenteredLabel("L", Vec(xL, row3Y - 7.f), 7.2f, outputLabel);
+        addCenteredLabel("R", Vec(xR, row3Y - 7.f), 7.2f, outputLabel);
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(xA, row3Y)), module, RexPlayer::SEQ_VOCT_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(xB, row3Y)), module, RexPlayer::SEQ_TRIG_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(xC, row3Y)), module, RexPlayer::SEQ_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(xL, row3Y)), module, RexPlayer::LEFT_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(xR, row3Y)), module, RexPlayer::RIGHT_OUTPUT));
 
-        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(82, 116)), module, RexPlayer::STATUS_LIGHT));
-        addChild(createLightCentered<SmallLight<BlueLight>>(mm2px(Vec(88, 116)), module, RexPlayer::POLY_LIGHT));
-        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(94, 116)), module, RexPlayer::RUN_LIGHT));
+        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(xL, 119.f)), module, RexPlayer::STATUS_LIGHT));
+        addChild(createLightCentered<SmallLight<BlueLight>>(mm2px(Vec((xL + xR) * 0.5f, 119.f)), module, RexPlayer::POLY_LIGHT));
+        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(xR, 119.f)), module, RexPlayer::RUN_LIGHT));
     }
 
     void appendContextMenu(Menu* menu) override {

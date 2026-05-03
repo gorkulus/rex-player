@@ -21,7 +21,7 @@ Do not sell the plugin through a non-GPL license without talking to VCV. Rack pl
 - [ ] Decide the public repo URL.
 - [ ] Fill `pluginUrl`, `manualUrl`, `sourceUrl`, and optionally `authorEmail` in `plugin.json`.
 - [ ] Confirm the final public author/brand string is `Sound Visions`.
-- [ ] Keep plugin slug as `RexRack`. Do not change it after public release or Rack patch compatibility breaks.
+- [ ] Keep plugin slug as `SoundVisions-REXRack`. Do not change it after public release or Rack patch compatibility breaks.
 - [ ] Confirm module slug remains `RexPlayer` and public module name is `REX Player`.
 - [ ] Confirm license is `MIT` in `plugin.json`.
 - [ ] Keep VelociLoops license in `third_party/VelociLoops/LICENSE`.
@@ -47,7 +47,7 @@ Smoke-test plugin loading:
 LD_LIBRARY_PATH=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6 python3 - <<'PY'
 import ctypes, os
 sdk = '/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6'
-plugin = 'dist/RexRack/plugin.so'
+plugin = 'dist/SoundVisions-REXRack/plugin.so'
 ctypes.CDLL(os.path.join(sdk, 'libRack.so'), mode=ctypes.RTLD_GLOBAL)
 ctypes.CDLL(plugin)
 print('dlopen ok')
@@ -65,7 +65,7 @@ g++ -std=c++17 -O2 -Ithird_party/VelociLoops/include tools/rex_probe.cpp third_p
 Install locally and restart Rack:
 
 ```bash
-rsync -a --delete dist/RexRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/RexRack/
+rsync -a --delete dist/SoundVisions-REXRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
 ```
 
 Then test manually in Rack:
@@ -80,7 +80,7 @@ Then test manually in Rack:
 - [ ] Clock-only normaled playback works with 16th clock into `CLK`.
 - [ ] `RST` resets to the first slice.
 - [ ] `RUN` switch/input start and stop sequence playback.
-- [ ] `SEQ`, `TRIG`, and `GATE` outputs work when patched externally.
+- [ ] `SLICE`, `TRIG`, and `GATE` outputs work when patched externally.
 - [ ] External cables to `SLICE` and `TRIG` break normaling but sequence outputs continue.
 - [ ] Stereo output is sane and does not clip horribly on typical loops.
 
@@ -95,11 +95,11 @@ Then test manually in Rack:
 - [ ] Tag the release:
 
 ```bash
-git tag v2.0.4
+git tag v2.0.5
 git push origin master --tags
 ```
 
-- [ ] Attach `dist/RexRack-2.0.4-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
+- [ ] Attach `dist/SoundVisions-REXRack-2.0.5-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
 - [ ] Include release notes from `CHANGELOG.md`.
 
 ## VCV Library submission later
@@ -108,7 +108,7 @@ VCV Library's open-source plugin process, as documented in `VCVRack/library`, is
 
 1. Push the source code to a public repo.
 2. Create exactly one issue in https://github.com/VCVRack/library/issues.
-3. Title the issue with the plugin slug: `RexRack`.
+3. Title the issue with the plugin slug: `SoundVisions-REXRack`.
 4. Post the source repo URL.
 5. For updates, bump `plugin.json` version, push a commit, and comment with:
    - new version

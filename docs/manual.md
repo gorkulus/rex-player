@@ -112,11 +112,11 @@ This is useful for simple one-trigger-per-slice stepping that does not care abou
 
 ## Outputs
 
-### SEQ
+### SLICE
 
-Sequenced V/Oct output. This emits the slice note selected by the internal REX timing sequencer.
+Sequenced slice V/Oct output. This emits the slice note selected by the internal REX timing sequencer.
 
-Patch it elsewhere if you want another module to follow the REX slice order, or patch/process it before bringing it back to `SLICE`.
+Patch it elsewhere if you want another module to follow the REX slice order, or patch/process it before bringing it back to the `SLICE` input.
 
 ### TRIG
 
@@ -147,7 +147,7 @@ The internal sequencer now drives slice choice and triggers playback.
 For modular abuse:
 
 1. Patch clock to `CLK`.
-2. Patch `SEQ` through a quantizer, switch, offset, sample-and-hold, or logic patch.
+2. Patch the output `SLICE` through a quantizer, switch, offset, sample-and-hold, or logic patch.
 3. Patch the processed result back into `SLICE`.
 4. Patch `TRIG` or `GATE` through clock dividers, Bernoulli gates, ratchets, probability, or logic.
 5. Patch the processed trigger back into the playback `TRIG` input.
@@ -187,7 +187,7 @@ If relevant input cables are polyphonic, REX Player uses a voice pool. Triggers 
 Check Rack's log:
 
 ```bash
-grep -nEi 'RexRack|Sound Visions|REX Player|Could not load plugin' ~/.local/share/Rack2/log.txt
+grep -nEi 'SoundVisions-REXRack|Sound Visions|REX Player|Could not load plugin' ~/.local/share/Rack2/log.txt
 ```
 
 Rack 2 requires the plugin manifest version to start with `2.`. If the log says the plugin ABI version does not match, rebuild/package/reinstall the current version.

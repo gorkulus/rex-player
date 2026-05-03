@@ -25,7 +25,7 @@ Built for the hackathon with VelociLoops.
 1. Clock `CLK` from Entrian Sequencers or any 16th-note clock.
 2. Reset `RST` from the transport/bar reset.
 3. Leave `SLICE` and `TRIG` unpatched for normaled playback.
-4. Patch `SEQ` through a switch or offset, then back to `SLICE`.
+4. Patch the output `SLICE` through a switch or offset, then back to the `SLICE` input.
 5. Patch sequenced `TRIG` through probability/ratchets, then back to `TRIG`.
 6. Modulate `PITCH` with a sequencer or keyboard CV.
 7. Send `L/R` through filters, wavefolders, delays, and compressors.
