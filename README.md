@@ -6,7 +6,7 @@ A one-shot VCV Rack 2 plugin prototype for triggering REX/RX2 slices directly in
 
 - Brand: `Rex Rack`
 - Module: `REX Rack Player`
-- Tags: `Sampler`, `Drum`, `Polyphonic`, `External`
+- Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`, `Polyphonic`, `External`
 
 ## Module: REX Rack Player
 
@@ -16,6 +16,15 @@ A one-shot VCV Rack 2 plugin prototype for triggering REX/RX2 slices directly in
 - Pitch V/Oct input repitches playback (`0V = native rate`, `+1V = octave up`, `-1V = octave down`).
 - Trigger input fires the current slice.
 - Step trigger fires current slice then advances the internal slice pointer.
+- Clock input expects x4/16th-note clock pulses. REX PPQ timing uses 15360 ticks/bar, so each clock pulse advances 960 PPQ ticks. The first ever clock interval is used to learn tempo; once a period has been measured, resets/restarts can emit off-grid REX slice timing accurately from the next clock edge.
+- Reset trigger resets the clocked sequence to the first slice.
+- Run switch defaults on; Run input toggles the switch on rising trigger.
+- Clocked sequence outputs:
+  - `SEQ` V/Oct output holds the currently scheduled slice note.
+  - `TRIG` outputs a short 10V pulse when a sequenced slice fires.
+  - `GATE` outputs 10V from slice start until the next REX slice position.
+- Internal normaling: with no trigger cable patched, the clocked sequencer internally triggers playback. With no slice cable patched, sequenced playback uses the clocked slice. Patching either input breaks that input's normal; sequence outputs continue to emit for external rerouting.
+- External trigger+slice input can cue the clocked sequencer to that slice so it continues from that slice's original REX timing.
 - Mono mode chokes active playback with a short crossfade to avoid clicks.
 - Polyphonic input cables enable a voice pool; channel count sets voice count, and triggers distribute round-robin through the pool.
 - L/R master outputs.

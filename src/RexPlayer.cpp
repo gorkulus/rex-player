@@ -24,6 +24,10 @@ constexpr int kMaxVoices = PORT_MAX_CHANNELS;
 constexpr int kOverviewBins = 768;
 constexpr int kFadeSamples = 64;
 constexpr float kRackAudioVolts = 5.f;
+constexpr int kRexPpqPerBar = 15360;
+constexpr int kRexPpqPerQuarter = kRexPpqPerBar / 4;
+constexpr int kClockPpq = kRexPpqPerQuarter / 4; // One x4/16th-note clock pulse.
+constexpr float kSeqTriggerSeconds = 1e-3f;
 
 static std::string baseName(const std::string& path) {
     const size_t slash = path.find_last_of("/\\");
@@ -67,6 +71,9 @@ struct RexBuffer {
     std::vector<RexSlice> slices;
     std::vector<float> overview;
     std::vector<float> slicePositions;
+    std::vector<int> sequenceOrder;
+    std::vector<double> sequenceGateLengths;
+    int sequenceLengthPpq = 1;
 };
 
 struct VLHandle {
@@ -150,6 +157,41 @@ static std::shared_ptr<RexBuffer> loadRexBufferFromFile(const std::string& path,
 
         inferredTotalFrames = std::max(inferredTotalFrames, slice.sampleStart + std::max(slice.sampleLength, slice.renderedFrames));
         buffer->slices.push_back(std::move(slice));
+    }
+
+    buffer->sequenceOrder.reserve(buffer->slices.size());
+    for (size_t i = 0; i < buffer->slices.size(); ++i) {
+        buffer->sequenceOrder.push_back(static_cast<int>(i));
+    }
+    std::sort(buffer->sequenceOrder.begin(), buffer->sequenceOrder.end(), [&buffer](int a, int b) {
+        const RexSlice& sa = buffer->slices[static_cast<size_t>(a)];
+        const RexSlice& sb = buffer->slices[static_cast<size_t>(b)];
+        if (sa.ppqPos != sb.ppqPos) return sa.ppqPos < sb.ppqPos;
+        return sa.index < sb.index;
+    });
+
+    int sequenceLength = buffer->ppqLength;
+    for (const RexSlice& slice : buffer->slices) {
+        sequenceLength = std::max(sequenceLength, slice.ppqPos + 1);
+    }
+    buffer->sequenceLengthPpq = std::max(1, sequenceLength);
+    buffer->sequenceGateLengths.assign(buffer->sequenceOrder.size(), static_cast<double>(kClockPpq));
+    for (size_t orderIndex = 0; orderIndex < buffer->sequenceOrder.size(); ++orderIndex) {
+        const int curSlice = buffer->sequenceOrder[orderIndex];
+        const int cur = std::max(0, std::min(buffer->sequenceLengthPpq - 1, buffer->slices[static_cast<size_t>(curSlice)].ppqPos));
+        double gate = static_cast<double>(buffer->sequenceLengthPpq);
+        for (size_t step = 1; step <= buffer->sequenceOrder.size(); ++step) {
+            const size_t nextIndex = (orderIndex + step) % buffer->sequenceOrder.size();
+            const int nextSlice = buffer->sequenceOrder[nextIndex];
+            int next = std::max(0, std::min(buffer->sequenceLengthPpq - 1, buffer->slices[static_cast<size_t>(nextSlice)].ppqPos));
+            if (nextIndex <= orderIndex) next += buffer->sequenceLengthPpq;
+            const int delta = next - cur;
+            if (delta > 0) {
+                gate = static_cast<double>(delta);
+                break;
+            }
+        }
+        buffer->sequenceGateLengths[orderIndex] = std::max(1.0, gate);
     }
 
     buffer->totalFrames = std::max(1, inferredTotalFrames);
@@ -244,10 +286,10 @@ static void renderVoice(Voice& voice, const RexBuffer& buffer, float& outL, floa
 } // namespace
 
 struct RexPlayer : Module {
-    enum ParamId { PARAMS_LEN };
-    enum InputId { SLICE_INPUT, PITCH_INPUT, TRIG_INPUT, STEP_TRIG_INPUT, INPUTS_LEN };
-    enum OutputId { LEFT_OUTPUT, RIGHT_OUTPUT, OUTPUTS_LEN };
-    enum LightId { STATUS_LIGHT, POLY_LIGHT, LIGHTS_LEN };
+    enum ParamId { RUN_PARAM, PARAMS_LEN };
+    enum InputId { SLICE_INPUT, PITCH_INPUT, TRIG_INPUT, STEP_TRIG_INPUT, CLOCK_INPUT, RESET_INPUT, RUN_INPUT, INPUTS_LEN };
+    enum OutputId { LEFT_OUTPUT, RIGHT_OUTPUT, SEQ_VOCT_OUTPUT, SEQ_TRIG_OUTPUT, SEQ_GATE_OUTPUT, OUTPUTS_LEN };
+    enum LightId { STATUS_LIGHT, POLY_LIGHT, RUN_LIGHT, LIGHTS_LEN };
 
     std::shared_ptr<const RexBuffer> buffer;
     std::atomic<uint64_t> nextGeneration{1};
@@ -267,20 +309,44 @@ struct RexPlayer : Module {
     std::array<Voice, kMaxVoices> tails;
     std::array<dsp::SchmittTrigger, kMaxVoices> trigTriggers;
     std::array<dsp::SchmittTrigger, kMaxVoices> stepTriggers;
+    dsp::SchmittTrigger clockTrigger;
+    dsp::SchmittTrigger resetTrigger;
+    dsp::SchmittTrigger runTrigger;
+    dsp::PulseGenerator seqTrigPulse;
     int stepSlice = 0;
     int polyVoiceCursor = 0;
     int lastVoiceIndex = 0;
 
+    bool seqClockSeen = false;
+    bool clockHasLastEdge = false;
+    double seqSamplesSinceClock = 0.0;
+    double seqSamplesPerClock = 0.0;
+    int64_t seqClockTick = 0;
+    double seqAbsPpq = 0.0;
+    int64_t seqLoop = 0;
+    size_t nextSeqOrderIndex = 0;
+    int currentSeqSlice = 0;
+    double seqGateRemainingPpq = 0.0;
+    bool wasRunning = true;
+
     RexPlayer() {
         config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
+        configSwitch(RUN_PARAM, 0.f, 1.f, 1.f, "Run clocked sequence", {"Stopped", "Running"});
         configInput(SLICE_INPUT, "Slice select V/Oct");
         configInput(PITCH_INPUT, "Playback pitch V/Oct");
         configInput(TRIG_INPUT, "Trigger current slice");
         configInput(STEP_TRIG_INPUT, "Trigger current slice and step");
+        configInput(CLOCK_INPUT, "Clock x4 / 16th notes");
+        configInput(RESET_INPUT, "Reset sequence to first slice");
+        configInput(RUN_INPUT, "Run toggle trigger");
         configOutput(LEFT_OUTPUT, "Left master");
         configOutput(RIGHT_OUTPUT, "Right master");
+        configOutput(SEQ_VOCT_OUTPUT, "Clocked slice V/Oct");
+        configOutput(SEQ_TRIG_OUTPUT, "Clocked slice trigger");
+        configOutput(SEQ_GATE_OUTPUT, "Clocked slice gate");
         configLight(STATUS_LIGHT, "REX loaded");
         configLight(POLY_LIGHT, "Polyphonic voice mode");
+        configLight(RUN_LIGHT, "Sequence running");
     }
 
     std::shared_ptr<const RexBuffer> getBuffer() const {
@@ -366,14 +432,27 @@ struct RexPlayer : Module {
         return std::max(0, std::min(static_cast<int>(b.slices.size()) - 1, note - baseMidiNote.load(std::memory_order_relaxed)));
     }
 
-    int sliceForChannel(const RexBuffer& b, int c, int channelCount) {
+    int clampSlice(const RexBuffer& b, int slice) const {
+        if (b.slices.empty()) return 0;
+        return std::max(0, std::min(static_cast<int>(b.slices.size()) - 1, slice));
+    }
+
+    float voltageFromSlice(int slice) const {
+        const int note = baseMidiNote.load(std::memory_order_relaxed) + slice;
+        return (static_cast<float>(note) - 60.f) / 12.f; // Inverse of Rack V/OCT 0V = C4/MIDI 60.
+    }
+
+    int sliceForChannel(const RexBuffer& b, int c, int channelCount, bool useSequencerNormal = false) {
         if (inputs[SLICE_INPUT].isConnected()) {
             return sliceFromVoltage(b, inputs[SLICE_INPUT].getPolyVoltage(static_cast<uint8_t>(c)));
+        }
+        if (useSequencerNormal && seqClockSeen) {
+            return clampSlice(b, currentSeqSlice);
         }
         if (channelCount > 1) {
             return (stepSlice + c) % static_cast<int>(b.slices.size());
         }
-        return std::max(0, std::min(static_cast<int>(b.slices.size()) - 1, stepSlice));
+        return clampSlice(b, stepSlice);
     }
 
     void copyVoiceToTail(int index) {
@@ -427,13 +506,251 @@ struct RexPlayer : Module {
         lastTriggeredSlice.store(slice, std::memory_order_relaxed);
     }
 
+    int sequenceLengthPpq(const RexBuffer& b) const {
+        return std::max(1, b.sequenceLengthPpq);
+    }
+
+    int orderedSliceIndex(const RexBuffer& b, size_t orderIndex) const {
+        if (b.sequenceOrder.empty()) return 0;
+        orderIndex = std::min(orderIndex, b.sequenceOrder.size() - 1);
+        return clampSlice(b, b.sequenceOrder[orderIndex]);
+    }
+
+    int eventPpq(const RexBuffer& b, size_t orderIndex) const {
+        if (b.sequenceOrder.empty()) return 0;
+        const int len = sequenceLengthPpq(b);
+        const int slice = orderedSliceIndex(b, orderIndex);
+        return std::max(0, std::min(len - 1, b.slices[static_cast<size_t>(slice)].ppqPos));
+    }
+
+    double gateLengthPpqForOrder(const RexBuffer& b, size_t orderIndex) const {
+        if (b.sequenceGateLengths.empty()) return static_cast<double>(kClockPpq);
+        orderIndex = std::min(orderIndex, b.sequenceGateLengths.size() - 1);
+        return std::max(1.0, b.sequenceGateLengths[orderIndex]);
+    }
+
+    void resetSequencer(const RexBuffer& b, bool forgetClockPhase) {
+        seqAbsPpq = 0.0;
+        seqLoop = 0;
+        seqClockTick = 0;
+        nextSeqOrderIndex = 0;
+        seqGateRemainingPpq = 0.0;
+        currentSeqSlice = orderedSliceIndex(b, 0);
+        if (forgetClockPhase) {
+            seqClockSeen = false;
+        }
+    }
+
+    size_t orderIndexForSlice(const RexBuffer& b, int slice) const {
+        slice = clampSlice(b, slice);
+        for (size_t i = 0; i < b.sequenceOrder.size(); ++i) {
+            if (b.sequenceOrder[i] == slice) return i;
+        }
+        return 0;
+    }
+
+    void cueSequencerToSlice(const RexBuffer& b, int slice) {
+        if (b.sequenceOrder.empty()) return;
+        const int len = sequenceLengthPpq(b);
+        const size_t orderIndex = orderIndexForSlice(b, slice);
+        const int64_t currentLoop = std::max<int64_t>(0, static_cast<int64_t>(std::floor(seqAbsPpq / static_cast<double>(len))));
+        const double eventAbs = static_cast<double>(currentLoop * static_cast<int64_t>(len) + eventPpq(b, orderIndex));
+        const bool clockPeriodKnown = seqSamplesPerClock > 1.0;
+
+        currentSeqSlice = orderedSliceIndex(b, orderIndex);
+        selectedSlice.store(currentSeqSlice, std::memory_order_relaxed);
+
+        if (!clockPeriodKnown) {
+            // The external trigger already fired this slice. Without a measured clock
+            // period, we cannot continue off-grid REX timing yet, so do not arm the
+            // sequencer or hold a gate until the clock has learned an interval.
+            seqClockSeen = false;
+            seqGateRemainingPpq = 0.0;
+            return;
+        }
+
+        seqAbsPpq = eventAbs;
+        seqGateRemainingPpq = std::max(1.0, gateLengthPpqForOrder(b, orderIndex));
+        nextSeqOrderIndex = orderIndex + 1;
+        seqLoop = currentLoop;
+        if (nextSeqOrderIndex >= b.sequenceOrder.size()) {
+            nextSeqOrderIndex = 0;
+            seqLoop = currentLoop + 1;
+        }
+        seqClockTick = static_cast<int64_t>(std::floor(seqAbsPpq / static_cast<double>(kClockPpq)));
+        seqClockSeen = true;
+    }
+
+    void fireSequencedSlice(const RexBuffer& b, size_t orderIndex, bool usePolyMode, int voiceCount) {
+        const int seqSlice = orderedSliceIndex(b, orderIndex);
+        currentSeqSlice = seqSlice;
+        selectedSlice.store(seqSlice, std::memory_order_relaxed);
+        seqTrigPulse.trigger(kSeqTriggerSeconds);
+        seqGateRemainingPpq = std::max(1.0, gateLengthPpqForOrder(b, orderIndex));
+
+        // Internal normaling: with no trigger cable, the clocked sequence triggers playback.
+        // A patched trigger input breaks this normal, while the sequence outputs still emit.
+        if (!inputs[TRIG_INPUT].isConnected()) {
+            const int playbackSlice = inputs[SLICE_INPUT].isConnected() ? sliceFromVoltage(b, inputs[SLICE_INPUT].getVoltage()) : seqSlice;
+            const float pitchV = inputs[PITCH_INPUT].isConnected() ? inputs[PITCH_INPUT].getVoltage() : 0.f;
+            triggerSlice(b, playbackSlice, pitchV, usePolyMode, voiceCount);
+        }
+    }
+
+    void fireSequenceEventsThrough(const RexBuffer& b, double targetAbsPpq, bool usePolyMode, int voiceCount) {
+        if (b.sequenceOrder.empty()) return;
+        const int len = sequenceLengthPpq(b);
+        int guard = 0;
+        while (guard++ < static_cast<int>(b.sequenceOrder.size()) * 4) {
+            if (nextSeqOrderIndex >= b.sequenceOrder.size()) {
+                nextSeqOrderIndex = 0;
+                seqLoop++;
+            }
+            const double eventAbs = static_cast<double>(seqLoop * static_cast<int64_t>(len) + eventPpq(b, nextSeqOrderIndex));
+            if (eventAbs > targetAbsPpq + 1e-6) {
+                break;
+            }
+            const size_t firedOrderIndex = nextSeqOrderIndex;
+            fireSequencedSlice(b, firedOrderIndex, usePolyMode, voiceCount);
+            nextSeqOrderIndex++;
+        }
+    }
+
+    void advanceSequencerBy(const RexBuffer& b, double deltaPpq, bool usePolyMode, int voiceCount) {
+        if (deltaPpq <= 0.0 || b.sequenceOrder.empty()) return;
+        const double target = seqAbsPpq + deltaPpq;
+        const int len = sequenceLengthPpq(b);
+        int guard = 0;
+
+        while (guard++ < static_cast<int>(b.sequenceOrder.size()) * 4) {
+            if (nextSeqOrderIndex >= b.sequenceOrder.size()) {
+                nextSeqOrderIndex = 0;
+                seqLoop++;
+            }
+
+            const double eventAbs = static_cast<double>(seqLoop * static_cast<int64_t>(len) + eventPpq(b, nextSeqOrderIndex));
+            if (eventAbs > target + 1e-6) {
+                break;
+            }
+
+            const double elapsedToEvent = std::max(0.0, eventAbs - seqAbsPpq);
+            if (seqGateRemainingPpq > 0.0 && elapsedToEvent > 0.0) {
+                seqGateRemainingPpq = std::max(0.0, seqGateRemainingPpq - elapsedToEvent);
+            }
+            seqAbsPpq = std::max(seqAbsPpq, eventAbs);
+
+            const size_t firedOrderIndex = nextSeqOrderIndex;
+            fireSequencedSlice(b, firedOrderIndex, usePolyMode, voiceCount);
+            nextSeqOrderIndex++;
+        }
+
+        if (target > seqAbsPpq) {
+            const double elapsed = target - seqAbsPpq;
+            if (seqGateRemainingPpq > 0.0) {
+                seqGateRemainingPpq = std::max(0.0, seqGateRemainingPpq - elapsed);
+            }
+            seqAbsPpq = target;
+        }
+    }
+
+    bool isSequenceRunning() {
+        return params[RUN_PARAM].getValue() > 0.5f;
+    }
+
+    void processSequencer(const RexBuffer& b, const ProcessArgs& args, bool usePolyMode, int voiceCount) {
+        if (inputs[RUN_INPUT].isConnected() && runTrigger.process(inputs[RUN_INPUT].getVoltage(), 0.1f, 2.f)) {
+            params[RUN_PARAM].setValue(isSequenceRunning() ? 0.f : 1.f);
+        }
+
+        const bool running = isSequenceRunning();
+        if (running && !wasRunning) {
+            resetSequencer(b, true);
+        }
+        wasRunning = running;
+
+        if (inputs[RESET_INPUT].isConnected() && resetTrigger.process(inputs[RESET_INPUT].getVoltage(), 0.1f, 2.f)) {
+            resetSequencer(b, true);
+        }
+
+        const bool clockConnected = inputs[CLOCK_INPUT].isConnected();
+        if (!clockConnected) {
+            clockHasLastEdge = false;
+            seqClockSeen = false;
+            seqSamplesSinceClock = 0.0;
+            seqSamplesPerClock = 0.0;
+            seqGateRemainingPpq = 0.0;
+            return;
+        }
+
+        const bool clockEdge = clockTrigger.process(inputs[CLOCK_INPUT].getVoltage(), 0.1f, 2.f);
+        if (clockEdge) {
+            if (clockHasLastEdge && seqSamplesSinceClock > 1.0) {
+                seqSamplesPerClock = seqSamplesSinceClock;
+            }
+            clockHasLastEdge = true;
+            seqSamplesSinceClock = 0.0;
+        }
+
+        const bool clockPeriodKnown = seqSamplesPerClock > 1.0;
+        const double staleLimit = clockPeriodKnown ? std::max(2.0, seqSamplesPerClock * 2.5) : 0.0;
+        const bool clockFresh = clockEdge || !clockPeriodKnown || seqSamplesSinceClock <= staleLimit;
+        if (!clockFresh) {
+            // Do not free-run forever from an old tempo when the clock stops.
+            seqClockSeen = false;
+            clockHasLastEdge = false;
+            seqSamplesPerClock = 0.0;
+            seqSamplesSinceClock = 0.0;
+            seqGateRemainingPpq = 0.0;
+            return;
+        }
+
+        if (running && clockEdge) {
+            if (!seqClockSeen) {
+                if (clockPeriodKnown) {
+                    // Start on a real clock edge once tempo is known. On the first ever
+                    // incoming pulse we wait one pulse so off-grid REX slices are not
+                    // emitted late/bunched before an interval has been measured.
+                    seqClockSeen = true;
+                    seqClockTick = 0;
+                    seqAbsPpq = 0.0;
+                    seqLoop = 0;
+                    nextSeqOrderIndex = 0;
+                    fireSequenceEventsThrough(b, 0.0, usePolyMode, voiceCount);
+                }
+            }
+            else {
+                seqClockTick++;
+                const double target = static_cast<double>(seqClockTick) * static_cast<double>(kClockPpq);
+                if (target > seqAbsPpq) {
+                    advanceSequencerBy(b, target - seqAbsPpq, usePolyMode, voiceCount);
+                }
+                else {
+                    seqAbsPpq = target;
+                }
+            }
+        }
+        else if (running && seqClockSeen && clockPeriodKnown) {
+            advanceSequencerBy(b, static_cast<double>(kClockPpq) / seqSamplesPerClock, usePolyMode, voiceCount);
+        }
+
+        seqSamplesSinceClock += 1.0;
+
+        if (!running) {
+            seqGateRemainingPpq = 0.0;
+        }
+    }
+
     void process(const ProcessArgs& args) override {
         std::shared_ptr<const RexBuffer> b = getBuffer();
         if (!b || b->slices.empty()) {
             outputs[LEFT_OUTPUT].setVoltage(0.f);
             outputs[RIGHT_OUTPUT].setVoltage(0.f);
+            outputs[SEQ_VOCT_OUTPUT].setVoltage(0.f);
+            outputs[SEQ_TRIG_OUTPUT].setVoltage(0.f);
+            outputs[SEQ_GATE_OUTPUT].setVoltage(0.f);
             lights[STATUS_LIGHT].setBrightnessSmooth(0.f, args.sampleTime);
             lights[POLY_LIGHT].setBrightnessSmooth(0.f, args.sampleTime);
+            lights[RUN_LIGHT].setBrightnessSmooth(0.f, args.sampleTime);
             return;
         }
 
@@ -442,6 +759,7 @@ struct RexPlayer : Module {
             clearVoices();
             stepSlice = 0;
             polyVoiceCursor = 0;
+            resetSequencer(*b, true);
         }
 
         const int triggerChannels = std::max(inputs[TRIG_INPUT].getChannels(), inputs[STEP_TRIG_INPUT].getChannels());
@@ -451,7 +769,9 @@ struct RexPlayer : Module {
         const bool usePolyMode = channelCount > 1;
         polyMode.store(usePolyMode, std::memory_order_relaxed);
 
-        int shownSlice = sliceForChannel(*b, 0, channelCount);
+        processSequencer(*b, args, usePolyMode, channelCount);
+
+        int shownSlice = sliceForChannel(*b, 0, channelCount, true);
         selectedSlice.store(shownSlice, std::memory_order_relaxed);
 
         bool anyStepTrigger = false;
@@ -463,9 +783,12 @@ struct RexPlayer : Module {
             if (!trig && !step) {
                 continue;
             }
-            const int slice = sliceForChannel(*b, c, channelCount);
+            const int slice = sliceForChannel(*b, c, channelCount, true);
             const float pitchV = inputs[PITCH_INPUT].isConnected() ? inputs[PITCH_INPUT].getPolyVoltage(static_cast<uint8_t>(c)) : 0.f;
             triggerSlice(*b, slice, pitchV, usePolyMode, channelCount);
+            if (trig && inputs[TRIG_INPUT].isConnected()) {
+                cueSequencerToSlice(*b, slice);
+            }
             if (step) {
                 anyStepTrigger = true;
             }
@@ -489,8 +812,12 @@ struct RexPlayer : Module {
         activeVoices.store(active, std::memory_order_relaxed);
         outputs[LEFT_OUTPUT].setVoltage(clampf(outL * kRackAudioVolts, -10.f, 10.f));
         outputs[RIGHT_OUTPUT].setVoltage(clampf(outR * kRackAudioVolts, -10.f, 10.f));
+        outputs[SEQ_VOCT_OUTPUT].setVoltage(voltageFromSlice(clampSlice(*b, currentSeqSlice)));
+        outputs[SEQ_TRIG_OUTPUT].setVoltage(seqTrigPulse.process(args.sampleTime) ? 10.f : 0.f);
+        outputs[SEQ_GATE_OUTPUT].setVoltage(seqGateRemainingPpq > 0.0 ? 10.f : 0.f);
         lights[STATUS_LIGHT].setBrightnessSmooth(1.f, args.sampleTime);
         lights[POLY_LIGHT].setBrightnessSmooth(usePolyMode ? 1.f : 0.f, args.sampleTime);
+        lights[RUN_LIGHT].setBrightnessSmooth(isSequenceRunning() ? 1.f : 0.f, args.sampleTime);
 
         float ph = -1.f;
         const Voice* pv = nullptr;
@@ -666,6 +993,27 @@ struct RexWaveformDisplay : OpaqueWidget {
     }
 };
 
+struct RexTextLabel : Widget {
+    std::string text;
+    float fontSize = 8.f;
+    NVGcolor color = nvgRGB(170, 184, 210);
+    int align = NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE;
+
+    RexTextLabel(std::string text, float fontSize = 8.f, NVGcolor color = nvgRGB(170, 184, 210))
+        : text(std::move(text)), fontSize(fontSize), color(color) {}
+
+    void draw(const DrawArgs& args) override {
+        auto font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
+        if (font) {
+            nvgFontFaceId(args.vg, font->handle);
+        }
+        nvgFontSize(args.vg, fontSize);
+        nvgTextAlign(args.vg, align);
+        nvgFillColor(args.vg, color);
+        nvgText(args.vg, box.size.x * 0.5f, box.size.y * 0.5f, text.c_str(), nullptr);
+    }
+};
+
 struct RexPlayerWidget : ModuleWidget {
     RexPlayerWidget(RexPlayer* module) {
         setModule(module);
@@ -685,18 +1033,48 @@ struct RexPlayerWidget : ModuleWidget {
         display->box.size = Vec(box.size.x - 28.f, 126.f);
         addChild(display);
 
+        auto addCenteredLabel = [this](const std::string& text, Vec mm, float size = 7.2f, NVGcolor color = nvgRGB(170, 184, 210)) {
+            RexTextLabel* label = new RexTextLabel(text, size, color);
+            const Vec center = mm2px(mm);
+            label->box.pos = Vec(center.x - 18.f, center.y - 5.f);
+            label->box.size = Vec(36.f, 10.f);
+            addChild(label);
+        };
+
+        addParam(createParamCentered<CKSS>(mm2px(Vec(95, 12)), module, RexPlayer::RUN_PARAM));
+        addCenteredLabel("RUN", Vec(95, 19), 7.2f, nvgRGB(116, 255, 150));
+
         // Inputs
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14, 72)), module, RexPlayer::SLICE_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38, 72)), module, RexPlayer::PITCH_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62, 72)), module, RexPlayer::TRIG_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(86, 72)), module, RexPlayer::STEP_TRIG_INPUT));
+        addCenteredLabel("CLK", Vec(8, 65));
+        addCenteredLabel("RST", Vec(22, 65));
+        addCenteredLabel("RUN", Vec(36, 65));
+        addCenteredLabel("SLICE", Vec(50, 65));
+        addCenteredLabel("PITCH", Vec(64, 65));
+        addCenteredLabel("TRIG", Vec(78, 65));
+        addCenteredLabel("STEP", Vec(92, 65));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(8, 72)), module, RexPlayer::CLOCK_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(22, 72)), module, RexPlayer::RESET_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(36, 72)), module, RexPlayer::RUN_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(50, 72)), module, RexPlayer::SLICE_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(64, 72)), module, RexPlayer::PITCH_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(78, 72)), module, RexPlayer::TRIG_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(92, 72)), module, RexPlayer::STEP_TRIG_INPUT));
 
         // Outputs
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(38, 106)), module, RexPlayer::LEFT_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(62, 106)), module, RexPlayer::RIGHT_OUTPUT));
+        addCenteredLabel("SEQ", Vec(18, 99));
+        addCenteredLabel("TRIG", Vec(38, 99));
+        addCenteredLabel("GATE", Vec(58, 99));
+        addCenteredLabel("L", Vec(78, 99));
+        addCenteredLabel("R", Vec(94, 99));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(18, 106)), module, RexPlayer::SEQ_VOCT_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(38, 106)), module, RexPlayer::SEQ_TRIG_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(58, 106)), module, RexPlayer::SEQ_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(78, 106)), module, RexPlayer::LEFT_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(94, 106)), module, RexPlayer::RIGHT_OUTPUT));
 
-        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(86, 105)), module, RexPlayer::STATUS_LIGHT));
-        addChild(createLightCentered<SmallLight<BlueLight>>(mm2px(Vec(91, 105)), module, RexPlayer::POLY_LIGHT));
+        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(82, 116)), module, RexPlayer::STATUS_LIGHT));
+        addChild(createLightCentered<SmallLight<BlueLight>>(mm2px(Vec(88, 116)), module, RexPlayer::POLY_LIGHT));
+        addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(94, 116)), module, RexPlayer::RUN_LIGHT));
     }
 
     void appendContextMenu(Menu* menu) override {
