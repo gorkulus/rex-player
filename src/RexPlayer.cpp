@@ -861,20 +861,17 @@ struct RexPanel : TransparentWidget {
         nvgStrokeWidth(vg, 1.f);
         nvgStroke(vg);
 
-        // Output section: muted Rack-dark-mode grey with dark legends drawn above it.
-        const Vec outPos = mm2px(Vec(7.f, 96.f));
-        const Vec outSize = mm2px(Vec(90.f, 27.f));
+        // Output section: dark recessed area, just tall enough for labels and jacks.
+        const Vec outPos = mm2px(Vec(7.f, 99.f));
+        const Vec outSize = mm2px(Vec(90.f, 17.f));
         nvgBeginPath(vg);
-        nvgRoundedRect(vg, outPos.x, outPos.y, outSize.x, outSize.y, 7.f);
-        nvgFillColor(vg, nvgRGB(108, 120, 132));
+        nvgRoundedRect(vg, outPos.x, outPos.y, outSize.x, outSize.y, 5.f);
+        nvgFillColor(vg, nvgRGB(34, 38, 47));
         nvgFill(vg);
-        nvgStrokeColor(vg, nvgRGB(156, 172, 188));
-        nvgStrokeWidth(vg, 1.f);
-        nvgStroke(vg);
 
         // Visual normaling hints from playback inputs to their sequenced outputs.
         const float normY1 = mm2px(Vec(0.f, 92.f)).y;
-        const float normY2 = mm2px(Vec(0.f, 97.f)).y;
+        const float normY2 = mm2px(Vec(0.f, 99.f)).y;
         const float normXs[] = {mm2px(Vec(14.f, 0.f)).x, mm2px(Vec(30.f, 0.f)).x};
         for (float x : normXs) {
             nvgBeginPath(vg);
@@ -1075,7 +1072,7 @@ struct RexWaveformDisplay : TransparentWidget {
             nvgMoveTo(vg, x, 6.f);
             nvgLineTo(vg, x, h - 6.f);
             nvgStrokeColor(vg, nvgRGB(112, 255, 152));
-            nvgStrokeWidth(vg, 2.f);
+            nvgStrokeWidth(vg, 0.75f);
             nvgStroke(vg);
         }
 
@@ -1135,11 +1132,6 @@ struct RexPlayerWidget : ModuleWidget {
         panel->box.size = box.size;
         addChild(panel);
 
-        addChild(createWidget<ScrewSilver>(Vec(12, 0)));
-        addChild(createWidget<ScrewSilver>(Vec(box.size.x - 27, 0)));
-        addChild(createWidget<ScrewSilver>(Vec(12, RACK_GRID_HEIGHT - 15)));
-        addChild(createWidget<ScrewSilver>(Vec(box.size.x - 27, RACK_GRID_HEIGHT - 15)));
-
         RexWaveformDisplay* display = new RexWaveformDisplay(module);
         display->box.pos = Vec(14.f, 48.f);
         display->box.size = Vec(box.size.x - 28.f, 126.f);
@@ -1152,29 +1144,28 @@ struct RexPlayerWidget : ModuleWidget {
             label->box.size = Vec(36.f, 10.f);
             addChild(label);
         };
-
-        addParam(createParamCentered<CKSS>(mm2px(Vec(95, 12)), module, RexPlayer::RUN_PARAM));
-        addCenteredLabel("RUN", Vec(95, 19), 7.2f, nvgRGB(116, 255, 150));
-
         const float xA = 14.f;
         const float xB = 30.f;
         const float xC = 46.f;
-        const float xPitch = 78.f;
+        const float xPitch = 62.f;
+        const float xRunSwitch = 82.f;
         const float xL = 82.f;
         const float xR = 92.f;
         const float row1Y = 70.f;
         const float row2Y = 86.f;
         const float row3Y = 108.f;
         const NVGcolor inputLabel = nvgRGB(170, 184, 210);
-        const NVGcolor outputLabel = nvgRGB(24, 30, 38);
+        const NVGcolor outputLabel = nvgRGB(206, 218, 236);
 
         // Sequencer utility inputs
         addCenteredLabel("CLK", Vec(xA, row1Y - 7.f), 7.2f, inputLabel);
         addCenteredLabel("RST", Vec(xB, row1Y - 7.f), 7.2f, inputLabel);
         addCenteredLabel("RUN", Vec(xC, row1Y - 7.f), 7.2f, inputLabel);
+        addCenteredLabel("RUN", Vec(xRunSwitch, row1Y - 7.f), 7.2f, inputLabel);
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xA, row1Y)), module, RexPlayer::CLOCK_INPUT));
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xB, row1Y)), module, RexPlayer::RESET_INPUT));
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(xC, row1Y)), module, RexPlayer::RUN_INPUT));
+        addParam(createParamCentered<CKSS>(mm2px(Vec(xRunSwitch, row1Y)), module, RexPlayer::RUN_PARAM));
 
         // Playback inputs
         addCenteredLabel("SLICE", Vec(xA, row2Y - 7.f), 7.2f, inputLabel);

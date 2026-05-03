@@ -2,6 +2,14 @@
 
 This plugin uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
 
+## 2.0.6 - panel output-section refinement
+
+- Make the output-section panel shorter, darker, borderless, and return its legends to light text.
+- Move the PITCH input into the fourth grid position on the playback-input row.
+- Move the manual RUN switch and its label below the waveform display, aligned with the top jack labels.
+- Remove the decorative panel screws for a cleaner faceplate.
+- Make the waveform playhead indicator thinner.
+
 ## 2.0.5 - final pre-release polish
 
 - Change pre-release plugin slug to `SoundVisions-REXRack` for VCV naming conventions.
