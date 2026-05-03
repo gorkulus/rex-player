@@ -1,6 +1,12 @@
 # Changelog
 
-Rex Rack uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
+RexRack uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
+
+## 2.0.4 - Sound Visions naming
+
+- Set VCV brand to `Sound Visions`.
+- Rename public module display name to `REX Player`.
+- Remove the `Polyphonic` Rack browser tag while keeping the optional poly-cable voice-pool behavior documented.
 
 ## 2.0.3 - hackathon release docs
 
@@ -24,7 +30,7 @@ Rex Rack uses Rack-compatible version numbers. For Rack 2, the manifest version 
 ## 2.0.0 - Rack 2 ABI fix
 
 - Changed plugin manifest version to `2.x.x` so Rack 2 will load the plugin.
-- Improved browser discoverability with `Rex Rack` brand, `REX Rack Player` module name, and Rack tags.
+- Improved browser discoverability with interim brand/module display names and Rack tags.
 
 ## 0.1.0 - initial prototype
 

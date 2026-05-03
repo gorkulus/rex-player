@@ -4,15 +4,15 @@ This is a practical release note, not legal advice. If this becomes a paid produ
 
 ## Recommended license
 
-Use MIT for Rex Rack.
+Use MIT for Sound Visions REX Player.
 
-MIT is the best fit for this release because it is short, familiar, permissive, and includes an explicit "as is" warranty/liability disclaimer. It lets people use, copy, modify, publish, distribute, sublicense, and sell copies of Rex Rack's own software. Anyone distributing Rex Rack as a Rack plugin still needs to respect Rack/VCV licensing and distribution rules.
+MIT is the best fit for this release because it is short, familiar, permissive, and includes an explicit "as is" warranty/liability disclaimer. It lets people use, copy, modify, publish, distribute, sublicense, and sell copies of REX Player's own software. Anyone distributing REX Player as a Rack plugin still needs to respect Rack/VCV licensing and distribution rules.
 
 VelociLoops is released under The Unlicense. That is compatible with MIT in practice because VelociLoops grants broad rights to copy, modify, publish, use, compile, sell, and distribute the software, with its own no-warranty disclaimer.
 
 The repo should keep:
 
-- `LICENSE` for Rex Rack's MIT license.
+- `LICENSE` for the MIT license covering Sound Visions REX Player.
 - `third_party/VelociLoops/LICENSE` for VelociLoops.
 - `THIRD_PARTY_NOTICES.md` to make the vendored dependency obvious.
 
@@ -22,13 +22,13 @@ Rack is GPLv3+, but VCV publishes a Non-Commercial Plugin License Exception that
 
 That means a free open-source MIT release is a normal path for a Rack plugin.
 
-If anyone sells Rex Rack as a Rack plugin under non-GPL terms later, they should contact VCV about a commercial plugin license. That is about Rack plugin distribution/linking and VCV's terms, not about VelociLoops.
+If anyone sells REX Player as a Rack plugin under non-GPL terms later, they should contact VCV about a commercial plugin license. That is about Rack plugin distribution/linking and VCV's terms, not about VelociLoops.
 
 ## VelociLoops and REX/RX2
 
 VelociLoops describes itself as a clean, dependency-free implementation for reading and writing REX2/RX2 files, including DWOP decode/encode. It is open source and released under The Unlicense.
 
-For Rex Rack, we vendor VelociLoops source code and compile it into the plugin binary. We do not ship any Propellerhead/Reason Studios SDK, source code, binaries, or sample content.
+For REX Player, we vendor VelociLoops source code and compile it into the plugin binary. We do not ship any Propellerhead/Reason Studios SDK, source code, binaries, or sample content.
 
 Reverse engineering laws vary by jurisdiction. Interoperability-oriented reverse engineering is often treated differently from copying proprietary code, but it is not something I can guarantee legally. The practical risk looks low for a free open-source plugin that:
 
@@ -41,11 +41,11 @@ Reverse engineering laws vary by jurisdiction. Interoperability-oriented reverse
 
 ## Trademark / naming
 
-Keep the product name `Rex Rack`, not `REX2 Rack`, `ReCycle Rack`, `Propellerhead Rack`, or anything that looks official.
+Use `Sound Visions` as the VCV brand and `REX Player` as the module name. Avoid names like `REX2 Player`, `ReCycle Player`, `Propellerhead Player`, `Reason Rack`, or anything that looks official or implies endorsement.
 
 Use REX/RX2 descriptively in docs because users need to know what files are supported. Add a simple disclaimer:
 
-> REX and REX2 are file formats associated with Propellerhead/Reason Studios. Rex Rack is an independent project and is not endorsed by Propellerhead/Reason Studios.
+> REX and REX2 are file formats associated with Propellerhead/Reason Studios. Sound Visions REX Player is an independent project and is not endorsed by Propellerhead/Reason Studios.
 
 Avoid using Propellerhead/Reason Studios logos, product artwork, or panel layouts.
 

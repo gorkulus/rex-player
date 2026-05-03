@@ -1,9 +1,9 @@
 {
   "slug": "RexRack",
-  "name": "Rex Rack",
-  "version": "2.0.3",
+  "name": "REX Player",
+  "version": "2.0.4",
   "license": "MIT",
-  "brand": "Rex Rack",
+  "brand": "Sound Visions",
   "author": "gorkulus + Vector",
   "authorEmail": "",
   "authorUrl": "",
@@ -15,9 +15,15 @@
   "modules": [
     {
       "slug": "RexPlayer",
-      "name": "REX Rack Player",
+      "name": "REX Player",
       "description": "Clockable slice-triggering REX/RX2 sampler/player using VelociLoops.",
-      "tags": ["Sampler", "Drum", "Sequencer", "Clock modulator", "Polyphonic", "External"]
+      "tags": [
+        "Sampler",
+        "Drum",
+        "Sequencer",
+        "Clock modulator",
+        "External"
+      ]
     }
   ]
 }

@@ -1,6 +1,6 @@
-# Rex Rack hackathon release notes
+# Sound Visions REX Player hackathon release notes
 
-Rex Rack is a VCV Rack 2 plugin for REX/RX2 breakbeat slicing inside a modular patch.
+REX Player is a Sound Visions module for VCV Rack 2 that brings REX/RX2 breakbeat slicing into a modular patch.
 
 It started as a simple REX slice player and quickly turned into something more useful: a clocked REX sequencer that exposes slice timing as patchable CV.
 
@@ -16,7 +16,7 @@ It started as a simple REX slice player and quickly turned into something more u
 
 ## Suggested release blurb
 
-Rex Rack brings REX/RX2 loop slicing into VCV Rack. Load a breakbeat, clock it, trigger individual slices, repitch them with V/Oct, or use the original REX timing as a modular sequencer. The module outputs sequenced slice CV, triggers, and gates, so the loop can drive the rest of your patch instead of sitting behind it as static audio.
+Sound Visions REX Player brings REX/RX2 loop slicing into VCV Rack. Load a breakbeat, clock it, trigger individual slices, repitch them with V/Oct, or use the original REX timing as a modular sequencer. The module outputs sequenced slice CV, triggers, and gates, so the loop can drive the rest of your patch instead of sitting behind it as static audio.
 
 Built for the hackathon with VelociLoops.
 

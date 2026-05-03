@@ -1,6 +1,6 @@
-# Rex Rack manual
+# Sound Visions REX Player manual
 
-Rex Rack plays REX-family sliced loops inside VCV Rack 2.
+REX Player is a Sound Visions module for playing REX-family sliced loops inside VCV Rack 2.
 
 The module has two main personalities:
 
@@ -169,7 +169,7 @@ This is the mode tested with Entrian Melody and a matching REX-derived MIDI file
 
 Default behavior is mono choke mode. A new slice trigger fades out current playback quickly before starting the next slice. This keeps classic chopped-break behavior and avoids clicky hard cuts.
 
-If relevant input cables are polyphonic, Rex Rack uses a voice pool. Triggers are distributed round-robin across the available channels. This lets slices overlap instead of choking every previous slice.
+If relevant input cables are polyphonic, REX Player uses a voice pool. Triggers are distributed round-robin across the available channels. This lets slices overlap instead of choking every previous slice.
 
 ## Known limitations
 
@@ -187,7 +187,7 @@ If relevant input cables are polyphonic, Rex Rack uses a voice pool. Triggers ar
 Check Rack's log:
 
 ```bash
-grep -nEi 'RexRack|Rex Rack|REX Rack|Could not load plugin' ~/.local/share/Rack2/log.txt
+grep -nEi 'RexRack|Sound Visions|REX Player|Could not load plugin' ~/.local/share/Rack2/log.txt
 ```
 
 Rack 2 requires the plugin manifest version to start with `2.`. If the log says the plugin ABI version does not match, rebuild/package/reinstall the current version.

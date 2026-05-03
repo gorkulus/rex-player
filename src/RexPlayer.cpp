@@ -872,7 +872,7 @@ struct RexPanel : TransparentWidget {
 
         nvgFontSize(vg, 10.f);
         nvgFillColor(vg, nvgRGB(118, 203, 255));
-        nvgText(vg, box.size.x * 0.5f, box.size.y - 14.f, "VelociLoops / RexRack", nullptr);
+        nvgText(vg, box.size.x * 0.5f, box.size.y - 14.f, "Sound Visions", nullptr);
     }
 };
 
@@ -1080,7 +1080,7 @@ struct RexPlayerWidget : ModuleWidget {
     void appendContextMenu(Menu* menu) override {
         RexPlayer* m = dynamic_cast<RexPlayer*>(module);
         menu->addChild(new MenuSeparator);
-        menu->addChild(createMenuLabel("Rex Rack"));
+        menu->addChild(createMenuLabel("Sound Visions / REX Player"));
         menu->addChild(createMenuItem("Load REX/RX2/RCY...", "", [m]() {
             if (m) m->chooseAndLoadFile();
         }));

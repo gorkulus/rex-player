@@ -1,6 +1,6 @@
-# Rex Rack
+# Sound Visions REX Player
 
-Rex Rack is a VCV Rack 2 plugin for playing REX-family breakbeat loops directly inside a modular patch.
+REX Player is a Sound Visions module for VCV Rack 2 that plays REX-family breakbeat loops directly inside a modular patch.
 
 It loads `.rx2`, `.rex`, and `.rcy` files with vendored [VelociLoops](https://github.com/kunitoki/VelociLoops), displays the waveform and slice markers, maps slices to V/Oct notes, and can also run as a clocked REX timing sequencer.
 
@@ -8,9 +8,10 @@ This is a hackathon release. It is already useful, but it is still young softwar
 
 ## Rack browser
 
-- Brand: `Rex Rack`
-- Module: `REX Rack Player`
-- Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`, `Polyphonic`, `External`
+- Brand: `Sound Visions`
+- Module: `REX Player`
+- Plugin slug/package: `RexRack`
+- Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`, `External`
 
 ## What it does
 
@@ -19,13 +20,13 @@ This is a hackathon release. It is already useful, but it is still young softwar
 - Plays selected slices from trigger/gate/MIDI-CV style patches.
 - Repitches playback with Rack V/Oct pitch tracking.
 - Chokes active playback in mono mode with a short fade to avoid clicks.
-- Uses a voice pool when driven by polyphonic cables.
+- Can use a voice pool when driven by polyphonic cables, but the module is not tagged as a general-purpose polyphonic module.
 - Follows original REX slice timing from an external 16th-note clock.
 - Outputs sequenced slice V/Oct, trigger, and gate signals for modular rerouting.
 
 ## Quick start
 
-1. Add `REX Rack Player` from the `Rex Rack` brand in Rack's module browser.
+1. Add `REX Player` from the `Sound Visions` brand in Rack's module browser.
 2. Right-click the module and choose `Load REX/RX2/RCY...`.
 3. Patch `L` and `R` to your mixer.
 4. For immediate clocked playback, patch a 16th-note clock into `CLK`. Leave `SLICE` and `TRIG` unpatched so the internal normaling can drive playback.
@@ -95,6 +96,6 @@ g++ -std=c++17 -O2 -Ithird_party/VelociLoops/include tools/rex_probe.cpp third_p
 
 ## License
 
-Rex Rack is released under the MIT License. VelociLoops is vendored under The Unlicense. See [LICENSE](LICENSE), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [docs/legal-and-licensing.md](docs/legal-and-licensing.md).
+REX Player is released under the MIT License. VelociLoops is vendored under The Unlicense. See [LICENSE](LICENSE), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [docs/legal-and-licensing.md](docs/legal-and-licensing.md).
 
-REX and REX2 are file formats associated with Propellerhead/Reason Studios. Rex Rack is an independent project and is not endorsed by Propellerhead/Reason Studios.
+REX and REX2 are file formats associated with Propellerhead/Reason Studios. Sound Visions REX Player is an independent project and is not endorsed by Propellerhead/Reason Studios.

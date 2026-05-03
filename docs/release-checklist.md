@@ -4,7 +4,7 @@ This checklist is for the hackathon release and for a later VCV Library submissi
 
 ## Recommended release posture
 
-Release Rex Rack as a free open-source Rack 2 plugin under MIT.
+Release Sound Visions REX Player as a free open-source Rack 2 plugin under MIT.
 
 Why MIT:
 
@@ -20,9 +20,9 @@ Do not sell the plugin through a non-GPL license without talking to VCV. Rack pl
 
 - [ ] Decide the public repo URL.
 - [ ] Fill `pluginUrl`, `manualUrl`, `sourceUrl`, and optionally `authorEmail` in `plugin.json`.
-- [ ] Confirm the final public author/brand string.
+- [ ] Confirm the final public author/brand string is `Sound Visions`.
 - [ ] Keep plugin slug as `RexRack`. Do not change it after public release or Rack patch compatibility breaks.
-- [ ] Confirm module slug remains `RexPlayer`.
+- [ ] Confirm module slug remains `RexPlayer` and public module name is `REX Player`.
 - [ ] Confirm license is `MIT` in `plugin.json`.
 - [ ] Keep VelociLoops license in `third_party/VelociLoops/LICENSE`.
 - [ ] Keep `THIRD_PARTY_NOTICES.md` in the package.
@@ -70,7 +70,7 @@ rsync -a --delete dist/RexRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/
 
 Then test manually in Rack:
 
-- [ ] Browser search finds brand `Rex Rack` / module `REX Rack Player`.
+- [ ] Browser search finds brand `Sound Visions` / module `REX Player`.
 - [ ] Module can be dragged around normally.
 - [ ] Context menu loads `.rx2`.
 - [ ] Waveform, slice markers, selected marker, and playhead render.
@@ -95,11 +95,11 @@ Then test manually in Rack:
 - [ ] Tag the release:
 
 ```bash
-git tag v2.0.3
+git tag v2.0.4
 git push origin master --tags
 ```
 
-- [ ] Attach `dist/RexRack-2.0.3-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
+- [ ] Attach `dist/RexRack-2.0.4-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
 - [ ] Include release notes from `CHANGELOG.md`.
 
 ## VCV Library submission later
@@ -114,7 +114,7 @@ VCV Library's open-source plugin process, as documented in `VCVRack/library`, is
    - new version
    - exact commit hash, not just a branch name
 
-VCV also requires plugins to follow their Plugin Ethics Guidelines. Rex Rack should be fine if we keep our own name/panel and avoid implying endorsement by Propellerhead/Reason Studios or VCV.
+VCV also requires plugins to follow their Plugin Ethics Guidelines. Sound Visions REX Player should be fine if we keep our own brand/panel identity and avoid implying endorsement by Propellerhead/Reason Studios or VCV.
 
 ## Nice-to-have before a wider release
 
