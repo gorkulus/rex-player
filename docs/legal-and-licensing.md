@@ -18,7 +18,7 @@ The repo should keep:
 
 ## Copyright notice
 
-Keep a copyright notice in the MIT `LICENSE`; the MIT permission notice is meant to travel with every source/binary copy. Before publishing, replace the current placeholder with the actual copyright holder. For a small personal GitHub release, the clean default is something like `Copyright (c) 2026 <maintainer name or gorkulus> and contributors`. Use `Sound Visions LLC` only if you intentionally want this code owned and maintained as an LLC asset.
+Keep the copyright notice in the MIT `LICENSE`; the MIT permission notice is meant to travel with every source/binary copy. For this small personal/pseudonymous GitHub release, the current notice is `Copyright (c) 2026 gorkulus and contributors`. Use `Sound Visions LLC` only for projects you intentionally want owned and maintained as an LLC asset.
 
 ## VCV Rack licensing
 
