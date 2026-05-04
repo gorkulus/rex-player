@@ -1224,4 +1224,4 @@ struct RexPlayerWidget : ModuleWidget {
     }
 };
 
-Model* modelRexPlayer = createModel<RexPlayer, RexPlayerWidget>("RexPlayer");
+Model* modelRexPlayer = createModel<RexPlayer, RexPlayerWidget>("REXPlayer");

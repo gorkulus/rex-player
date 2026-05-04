@@ -1,7 +1,7 @@
 {
   "slug": "SoundVisions-REXPlayer",
   "name": "REX Player",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "license": "MIT",
   "brand": "Sound Visions",
   "author": "gorkulus with Hermes Agent",
@@ -14,7 +14,7 @@
   "changelogUrl": "https://github.com/gorkulus/rex-player/blob/master/CHANGELOG.md",
   "modules": [
     {
-      "slug": "RexPlayer",
+      "slug": "REXPlayer",
       "name": "REX Player",
       "description": "Clockable slice-triggering REX/RX2 sampler/player using VelociLoops.",
       "tags": [

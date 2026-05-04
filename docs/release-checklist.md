@@ -22,7 +22,7 @@ Do not sell the plugin through a non-GPL license without talking to VCV. Rack pl
 - [x] Fill `pluginUrl`, `manualUrl`, `sourceUrl`, and `changelogUrl` in `plugin.json`.
 - [x] Confirm public author string is `gorkulus with Hermes Agent`; VCV brand remains `Sound Visions`.
 - [x] Keep plugin slug as `SoundVisions-REXPlayer`. Do not change it after public release or Rack patch compatibility breaks.
-- [ ] Confirm module slug remains `RexPlayer` and public module name is `REX Player`.
+- [ ] Confirm module slug remains `REXPlayer` and public module name is `REX Player`.
 - [ ] Confirm license is `MIT` in `plugin.json`.
 - [ ] Keep VelociLoops license in `third_party/VelociLoops/LICENSE`.
 - [ ] Keep `THIRD_PARTY_NOTICES.md` in the package.
@@ -95,11 +95,11 @@ Then test manually in Rack:
 - [ ] Tag the release:
 
 ```bash
-git tag v2.0.8
+git tag v2.0.9
 git push origin master --tags
 ```
 
-- [ ] Attach `dist/SoundVisions-REXPlayer-2.0.8-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
+- [ ] Attach `dist/SoundVisions-REXPlayer-2.0.9-lin-x64.vcvplugin` to the GitHub release if doing a manual binary release.
 - [ ] Include release notes from `CHANGELOG.md`.
 
 ## VCV Library submission later

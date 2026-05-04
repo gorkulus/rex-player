@@ -2,6 +2,10 @@
 
 This plugin uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
 
+## 2.0.9 - final module slug casing
+
+- Set the Rack module slug to `REXPlayer` so the internal patch identity matches the final REX Player name/casing before public release.
+
 ## 2.0.8 - REX Player slug and GitHub metadata
 
 - Rename the pre-release plugin slug/package so it matches the final REX Player name.
