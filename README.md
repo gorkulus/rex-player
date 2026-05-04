@@ -49,16 +49,16 @@ For manual/MIDI-style slice triggering:
 
 ## Build
 
-Rack SDK 2.6.6 was used for the Hermes hackathon build.
+Rack SDK 2.6.6 was used for the Hermes hackathon build. Set `RACK_DIR` to your local Rack SDK path.
 
 ```bash
-make RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
+make RACK_DIR=/path/to/Rack-SDK
 ```
 
 ## Package
 
 ```bash
-make dist RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
+make dist RACK_DIR=/path/to/Rack-SDK
 ```
 
 This creates `dist/SoundVisions-REXRack/` and `dist/SoundVisions-REXRack-<version>-lin-x64.vcvplugin`.
@@ -66,9 +66,7 @@ This creates `dist/SoundVisions-REXRack/` and `dist/SoundVisions-REXRack-<versio
 ## Install for local Rack
 
 ```bash
-rsync -a --delete dist/SoundVisions-REXRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
-setfacl -Rm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack
-setfacl -Rdm u:gorkulus:rX /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack
+rsync -a --delete dist/SoundVisions-REXRack/ ~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
 ```
 
 Rack scans plugins at startup, so restart Rack after installing or updating the plugin.
@@ -76,10 +74,10 @@ Rack scans plugins at startup, so restart Rack after installing or updating the 
 ## Smoke-test plugin loading
 
 ```bash
-LD_LIBRARY_PATH=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6 python3 - <<'PY'
+LD_LIBRARY_PATH=/path/to/Rack-SDK python3 - <<'PY'
 import ctypes, os
-sdk = '/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6'
-plugin = '/home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/plugin.so'
+sdk = '/path/to/Rack-SDK'
+plugin = os.path.expanduser('~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/plugin.so')
 ctypes.CDLL(os.path.join(sdk, 'libRack.so'), mode=ctypes.RTLD_GLOBAL)
 ctypes.CDLL(plugin)
 print('dlopen ok')

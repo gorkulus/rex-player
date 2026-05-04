@@ -1,4 +1,4 @@
-RACK_DIR ?= /home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
+RACK_DIR ?= ../Rack-SDK
 
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += third_party/VelociLoops/src/velociloops.cpp

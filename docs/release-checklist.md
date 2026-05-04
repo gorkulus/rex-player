@@ -36,17 +36,17 @@ From the repo root:
 ```bash
 python3 -m json.tool plugin.json >/dev/null
 git diff --check
-make clean RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
-make RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
-make dist RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
+make clean RACK_DIR=/path/to/Rack-SDK
+make RACK_DIR=/path/to/Rack-SDK
+make dist RACK_DIR=/path/to/Rack-SDK
 ```
 
 Smoke-test plugin loading:
 
 ```bash
-LD_LIBRARY_PATH=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6 python3 - <<'PY'
+LD_LIBRARY_PATH=/path/to/Rack-SDK python3 - <<'PY'
 import ctypes, os
-sdk = '/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6'
+sdk = '/path/to/Rack-SDK'
 plugin = 'dist/SoundVisions-REXRack/plugin.so'
 ctypes.CDLL(os.path.join(sdk, 'libRack.so'), mode=ctypes.RTLD_GLOBAL)
 ctypes.CDLL(plugin)
@@ -65,7 +65,7 @@ g++ -std=c++17 -O2 -Ithird_party/VelociLoops/include tools/rex_probe.cpp third_p
 Install locally and restart Rack:
 
 ```bash
-rsync -a --delete dist/SoundVisions-REXRack/ /home/hermes/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
+rsync -a --delete dist/SoundVisions-REXRack/ ~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
 ```
 
 Then test manually in Rack:
