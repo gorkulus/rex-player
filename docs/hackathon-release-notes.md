@@ -1,8 +1,8 @@
 # Sound Visions REX Player hackathon release notes
 
-REX Player is a Sound Visions module for VCV Rack 2 that brings REX/RX2 breakbeat slicing into a modular patch.
+REX Player is a module for VCV Rack 2 that brings REX/RX2 breakbeat slicing into a modular patch.
 
-It started as a simple REX slice player and quickly turned into something more useful: a clocked REX sequencer that exposes slice timing as patchable CV.
+Created as part of the Hermes hackathon, it started as a simple REX slice player and quickly turned into something more useful: a clocked REX sequencer that exposes slice timing as patchable CV.
 
 ## Highlights
 
@@ -10,7 +10,7 @@ It started as a simple REX slice player and quickly turned into something more u
 - See waveform overview, slice points, selected slice, and playback position.
 - Trigger slices from V/Oct + trigger/gate sources.
 - Repitch slices musically with V/Oct tracking.
-- Drive playback from a 16th-note clock using the REX file's original timing.
+- Drive playback from a 4x / 16th-note clock using the REX file's original timing.
 - Break out REX timing as V/Oct, trigger, and gate outputs.
 - Use internal normaling for instant clocked playback, or patch the sequencer outputs through other modules for modular breakbeat chaos.
 
@@ -18,11 +18,11 @@ It started as a simple REX slice player and quickly turned into something more u
 
 Sound Visions REX Player brings REX/RX2 loop slicing into VCV Rack. Load a breakbeat, clock it, trigger individual slices, repitch them with V/Oct, or use the original REX timing as a modular sequencer. The module outputs sequenced slice CV, triggers, and gates, so the loop can drive the rest of your patch instead of sitting behind it as static audio.
 
-Built for the hackathon with VelociLoops.
+Built for the Hermes hackathon with VelociLoops.
 
 ## Demo patch idea
 
-1. Clock `CLK` from Entrian Sequencers or any 16th-note clock.
+1. Clock `CLK` from Entrian Sequencers or any 4x / 16th-note clock.
 2. Reset `RST` from the transport/bar reset.
 3. Leave `SLICE` and `TRIG` unpatched for normaled playback.
 4. Patch the output `SLICE` through a switch or offset, then back to the `SLICE` input.

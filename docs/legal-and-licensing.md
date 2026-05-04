@@ -1,10 +1,10 @@
 # Legal and licensing notes
 
-This is a practical release note, not legal advice. If this becomes a paid product or a major public project, ask a lawyer or VCV support before shipping.
+This is a practical release note for a free Hermes hackathon release, not legal advice. If this becomes a paid product or a major public project, ask a lawyer or VCV support before shipping.
 
 ## Recommended license
 
-Use MIT for Sound Visions REX Player.
+Use MIT for REX Player's project code.
 
 MIT is the best fit for this release because it is short, familiar, permissive, and includes an explicit "as is" warranty/liability disclaimer. It lets people use, copy, modify, publish, distribute, sublicense, and sell copies of REX Player's own software. Anyone distributing REX Player as a Rack plugin still needs to respect Rack/VCV licensing and distribution rules.
 
@@ -12,9 +12,13 @@ VelociLoops is released under The Unlicense. That is compatible with MIT in prac
 
 The repo should keep:
 
-- `LICENSE` for the MIT license covering Sound Visions REX Player.
+- `LICENSE` for the MIT license covering REX Player's project code.
 - `third_party/VelociLoops/LICENSE` for VelociLoops.
 - `THIRD_PARTY_NOTICES.md` to make the vendored dependency obvious.
+
+## Copyright notice
+
+Keep a copyright notice in the MIT `LICENSE`; the MIT permission notice is meant to travel with every source/binary copy. Before publishing, replace the current placeholder with the actual copyright holder. For a small personal GitHub release, the clean default is something like `Copyright (c) 2026 <maintainer name or gorkulus> and contributors`. Use `Sound Visions LLC` only if you intentionally want this code owned and maintained as an LLC asset.
 
 ## VCV Rack licensing
 
@@ -66,6 +70,6 @@ Keep that license text in every source/binary distribution. Do not make promises
 
 ## My call
 
-Ship the hackathon release under MIT, include the VelociLoops Unlicense notice, keep the trademark disclaimer, and avoid bundling any copyrighted sample content.
+Ship the Hermes hackathon release under MIT, include the VelociLoops Unlicense notice, keep the trademark disclaimer, and avoid bundling any copyrighted sample content.
 
 That gives users maximum freedom and gives us the clearest no-warranty/no-liability posture without leaning on public-domain dedication quirks.

@@ -40,7 +40,7 @@ This plugin uses Rack-compatible version numbers. For Rack 2, the manifest versi
 
 ## 2.0.1 - clocked REX sequencing
 
-- Added 16th-note clock input.
+- Added 4x / 16th-note clock input.
 - Added reset input.
 - Added run switch and run trigger input.
 - Added sequenced V/Oct, trigger, and gate outputs.

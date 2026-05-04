@@ -1,6 +1,6 @@
 # Release checklist
 
-This checklist is for the hackathon release and for a later VCV Library submission.
+This checklist is for the Hermes hackathon release and for a later VCV Library submission.
 
 ## Recommended release posture
 
@@ -77,7 +77,7 @@ Then test manually in Rack:
 - [ ] Manual `SLICE` + `TRIG` playback works.
 - [ ] `PITCH` repitches by octave per volt.
 - [ ] `STEP` trigger plays and advances.
-- [ ] Clock-only normaled playback works with 16th clock into `CLK`.
+- [ ] Clock-only normaled playback works with a 4x / 16th-note clock into `CLK`.
 - [ ] `RST` resets to the first slice.
 - [ ] `RUN` switch/input start and stop sequence playback.
 - [ ] `SLICE`, `TRIG`, and `GATE` outputs work when patched externally.

@@ -1,11 +1,11 @@
 # Sound Visions REX Player manual
 
-REX Player is a Sound Visions module for playing REX-family sliced loops inside VCV Rack 2.
+REX Player is a module for playing REX-family sliced loops inside VCV Rack 2. It was created as part of the Hermes hackathon.
 
 The module has two main personalities:
 
 1. A slice sampler. Select a slice with V/Oct, trigger it, and optionally repitch it.
-2. A clocked REX sequencer. Feed it a 16th-note clock and it follows the original timing stored in the REX file.
+2. A clocked REX sequencer. Feed it a 4x / 16th-note clock and it follows the original timing stored in the REX file.
 
 These two modes are not separate switches. They are connected by normaling. If you leave the slice and trigger inputs unpatched, the internal clocked sequencer drives playback. If you patch those inputs, your external patch takes over playback while the sequence outputs keep running.
 
@@ -28,7 +28,7 @@ File decoding currently happens on the UI thread. Normal files load quickly, but
 The display shows:
 
 - waveform overview in blue
-- slice markers in yellow
+- slice markers in blue
 - selected slice in pink
 - playback cursor in green
 - file name, slice count, sample rate, and detected tempo when available
@@ -64,11 +64,11 @@ This makes musical transposition easy with normal MIDI-to-CV or sequencer V/Oct 
 
 Clock input for internal REX timing playback.
 
-Patch a 16th-note clock here. In Entrian-style terms, this is x4 clocking: four pulses per quarter note, sixteen pulses per 4/4 bar.
+Patch a 4x / 16th-note clock here: four pulses per quarter note, sixteen pulses per 4/4 bar.
 
-REX timing uses 15360 PPQ ticks per bar internally, so each 16th-note clock advances 960 REX PPQ ticks.
+REX timing uses 15360 PPQ ticks per bar internally, so each 4x / 16th-note clock edge advances 960 REX PPQ ticks.
 
-The module measures the first real clock interval before it can interpolate off-grid slice events. After it has seen a full clock period, it can fire REX slices between clock pulses instead of quantizing every slice to the next 16th.
+The module measures the first real clock interval before it can interpolate off-grid slice events. After it has seen a full clock period, it can fire REX slices between clock pulses instead of quantizing every slice to the next 4x / 16th-note clock pulse.
 
 ### RST
 
@@ -135,7 +135,7 @@ Stereo audio outputs.
 For the simplest loop playback:
 
 1. Load a REX file.
-2. Patch a 16th-note clock to `CLK`.
+2. Patch a 4x / 16th-note clock to `CLK`.
 3. Patch reset to `RST` if available.
 4. Leave `SLICE` and `TRIG` unpatched.
 5. Patch `L` and `R` to a mixer.

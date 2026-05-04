@@ -1,10 +1,10 @@
 # Sound Visions REX Player
 
-REX Player is a Sound Visions module for VCV Rack 2 that plays REX-family breakbeat loops directly inside a modular patch.
+REX Player is a module for VCV Rack 2 that plays REX-family breakbeat loops directly inside a modular patch.
 
 It loads `.rx2`, `.rex`, and `.rcy` files with vendored [VelociLoops](https://github.com/kunitoki/VelociLoops), displays the waveform and slice markers, maps slices to V/Oct notes, and can also run as a clocked REX timing sequencer.
 
-This is a hackathon release. It is already useful, but it is still young software. Save your Rack patches before stress-testing weird files.
+This was created as part of the Hermes hackathon. It is already useful, but it is still young software. Save your Rack patches before stress-testing weird files.
 
 ## Rack browser
 
@@ -21,7 +21,7 @@ This is a hackathon release. It is already useful, but it is still young softwar
 - Repitches playback with Rack V/Oct pitch tracking.
 - Chokes active playback in mono mode with a short fade to avoid clicks.
 - Can use a voice pool when driven by polyphonic cables, but the module is not tagged as a general-purpose polyphonic module.
-- Follows original REX slice timing from an external 16th-note clock.
+- Follows original REX slice timing from an external 4x / 16th-note clock.
 - Outputs sequenced slice V/Oct, trigger, and gate signals for modular rerouting.
 
 ## Quick start
@@ -29,7 +29,7 @@ This is a hackathon release. It is already useful, but it is still young softwar
 1. Add `REX Player` from the `Sound Visions` brand in Rack's module browser.
 2. Right-click the module and choose `Load REX/RX2/RCY...`.
 3. Patch `L` and `R` to your mixer.
-4. For immediate clocked playback, patch a 16th-note clock into `CLK`. Leave `SLICE` and `TRIG` unpatched so the internal normaling can drive playback.
+4. For immediate clocked playback, patch a 4x / 16th-note clock into `CLK`. Leave `SLICE` and `TRIG` unpatched so the internal normaling can drive playback.
 5. Optional: patch reset into `RST` and use `RUN` to start/stop the sequencer.
 
 For manual/MIDI-style slice triggering:
@@ -49,7 +49,7 @@ For manual/MIDI-style slice triggering:
 
 ## Build
 
-Rack SDK 2.6.6 was used for the hackathon build.
+Rack SDK 2.6.6 was used for the Hermes hackathon build.
 
 ```bash
 make RACK_DIR=/home/hermes/Projects/shared/_sdks/Rack-SDK-2.6.6
