@@ -2,6 +2,13 @@
 
 This plugin uses Rack-compatible version numbers. For Rack 2, the manifest version must start with `2.`.
 
+## 2.0.8 - REX Player slug and GitHub metadata
+
+- Rename the pre-release plugin slug/package so it matches the final REX Player name.
+- Fill GitHub URL metadata for `gorkulus/rex-player`.
+- Set public author string to `gorkulus with Hermes Agent`.
+- Update docs to say `Hermes Agent creative hackathon` on first mention.
+
 ## 2.0.7 - RUN switch alignment
 
 - Move the manual RUN switch to the first-row fourth grid position, directly above the PITCH input.
@@ -16,7 +23,7 @@ This plugin uses Rack-compatible version numbers. For Rack 2, the manifest versi
 
 ## 2.0.5 - final pre-release polish
 
-- Change pre-release plugin slug to `SoundVisions-REXRack` for VCV naming conventions.
+- Refine pre-release plugin slug/package naming for VCV conventions.
 - Remove the `External` Rack browser tag.
 - Tighten lower-panel jack layout and output-section visuals.
 - Rename the sequenced V/Oct output panel label from `SEQ` to `SLICE`.

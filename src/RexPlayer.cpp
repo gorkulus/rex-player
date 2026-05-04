@@ -375,7 +375,7 @@ struct RexPlayer : Module {
         }
         if (!loaded) {
             lastStatus = error;
-            WARN("SoundVisions-REXRack: failed to load %s: %s", path.c_str(), error.c_str());
+            WARN("SoundVisions-REXPlayer: failed to load %s: %s", path.c_str(), error.c_str());
             return false;
         }
 

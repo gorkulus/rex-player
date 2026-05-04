@@ -1,6 +1,6 @@
 # Legal and licensing notes
 
-This is a practical release note for a free Hermes hackathon release, not legal advice. If this becomes a paid product or a major public project, ask a lawyer or VCV support before shipping.
+This is a practical release note for a free Hermes Agent creative hackathon release, not legal advice. If this becomes a paid product or a major public project, ask a lawyer or VCV support before shipping.
 
 ## Recommended license
 
@@ -70,6 +70,6 @@ Keep that license text in every source/binary distribution. Do not make promises
 
 ## My call
 
-Ship the Hermes hackathon release under MIT, include the VelociLoops Unlicense notice, keep the trademark disclaimer, and avoid bundling any copyrighted sample content.
+Ship the Hermes Agent creative hackathon release under MIT, include the VelociLoops Unlicense notice, keep the trademark disclaimer, and avoid bundling any copyrighted sample content.
 
 That gives users maximum freedom and gives us the clearest no-warranty/no-liability posture without leaning on public-domain dedication quirks.

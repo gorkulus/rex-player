@@ -1,6 +1,6 @@
 # Sound Visions REX Player manual
 
-REX Player is a module for playing REX-family sliced loops inside VCV Rack 2. It was created as part of the Hermes hackathon.
+REX Player is a module for playing REX-family sliced loops inside VCV Rack 2. It was created as part of the Hermes Agent creative hackathon.
 
 The module has two main personalities:
 
@@ -187,7 +187,7 @@ If relevant input cables are polyphonic, REX Player uses a voice pool. Triggers 
 Check Rack's log:
 
 ```bash
-grep -nEi 'SoundVisions-REXRack|Sound Visions|REX Player|Could not load plugin' ~/.local/share/Rack2/log.txt
+grep -nEi 'SoundVisions-REXPlayer|Sound Visions|REX Player|Could not load plugin' ~/.local/share/Rack2/log.txt
 ```
 
 Rack 2 requires the plugin manifest version to start with `2.`. If the log says the plugin ABI version does not match, rebuild/package/reinstall the current version.

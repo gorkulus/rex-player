@@ -4,14 +4,15 @@ REX Player is a module for VCV Rack 2 that plays REX-family breakbeat loops dire
 
 It loads `.rx2`, `.rex`, and `.rcy` files with vendored [VelociLoops](https://github.com/kunitoki/VelociLoops), displays the waveform and slice markers, maps slices to V/Oct notes, and can also run as a clocked REX timing sequencer.
 
-This was created as part of the Hermes hackathon. It is already useful, but it is still young software. Save your Rack patches before stress-testing weird files.
+This was created as part of the Hermes Agent creative hackathon. It is already useful, but it is still young software. Save your Rack patches before stress-testing weird files.
 
 ## Rack browser
 
 - Brand: `Sound Visions`
 - Module: `REX Player`
-- Plugin slug/package: `SoundVisions-REXRack`
+- Plugin slug/package: `SoundVisions-REXPlayer`
 - Tags: `Sampler`, `Drum`, `Sequencer`, `Clock modulator`
+- Source repo: https://github.com/gorkulus/rex-player
 
 ## What it does
 
@@ -49,7 +50,7 @@ For manual/MIDI-style slice triggering:
 
 ## Build
 
-Rack SDK 2.6.6 was used for the Hermes hackathon build. Set `RACK_DIR` to your local Rack SDK path.
+Rack SDK 2.6.6 was used for the Hermes Agent creative hackathon build. Set `RACK_DIR` to your local Rack SDK path.
 
 ```bash
 make RACK_DIR=/path/to/Rack-SDK
@@ -61,12 +62,12 @@ make RACK_DIR=/path/to/Rack-SDK
 make dist RACK_DIR=/path/to/Rack-SDK
 ```
 
-This creates `dist/SoundVisions-REXRack/` and `dist/SoundVisions-REXRack-<version>-lin-x64.vcvplugin`.
+This creates `dist/SoundVisions-REXPlayer/` and `dist/SoundVisions-REXPlayer-<version>-lin-x64.vcvplugin`.
 
 ## Install for local Rack
 
 ```bash
-rsync -a --delete dist/SoundVisions-REXRack/ ~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/
+rsync -a --delete dist/SoundVisions-REXPlayer/ ~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXPlayer/
 ```
 
 Rack scans plugins at startup, so restart Rack after installing or updating the plugin.
@@ -77,7 +78,7 @@ Rack scans plugins at startup, so restart Rack after installing or updating the 
 LD_LIBRARY_PATH=/path/to/Rack-SDK python3 - <<'PY'
 import ctypes, os
 sdk = '/path/to/Rack-SDK'
-plugin = os.path.expanduser('~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXRack/plugin.so')
+plugin = os.path.expanduser('~/.local/share/Rack2/plugins-lin-x64/SoundVisions-REXPlayer/plugin.so')
 ctypes.CDLL(os.path.join(sdk, 'libRack.so'), mode=ctypes.RTLD_GLOBAL)
 ctypes.CDLL(plugin)
 print('dlopen ok')

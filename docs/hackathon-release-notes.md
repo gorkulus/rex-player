@@ -2,7 +2,7 @@
 
 REX Player is a module for VCV Rack 2 that brings REX/RX2 breakbeat slicing into a modular patch.
 
-Created as part of the Hermes hackathon, it started as a simple REX slice player and quickly turned into something more useful: a clocked REX sequencer that exposes slice timing as patchable CV.
+Created as part of the Hermes Agent creative hackathon, it started as a simple REX slice player and quickly turned into something more useful: a clocked REX sequencer that exposes slice timing as patchable CV.
 
 ## Highlights
 
@@ -18,7 +18,7 @@ Created as part of the Hermes hackathon, it started as a simple REX slice player
 
 Sound Visions REX Player brings REX/RX2 loop slicing into VCV Rack. Load a breakbeat, clock it, trigger individual slices, repitch them with V/Oct, or use the original REX timing as a modular sequencer. The module outputs sequenced slice CV, triggers, and gates, so the loop can drive the rest of your patch instead of sitting behind it as static audio.
 
-Built for the Hermes hackathon with VelociLoops.
+Built for the Hermes Agent creative hackathon with VelociLoops.
 
 ## Demo patch idea
 
