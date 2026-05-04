@@ -2,6 +2,8 @@
 
 REX Player is a module for VCV Rack 2 that plays REX-family breakbeat loops directly inside a modular patch.
 
+![REX Player demo in VCV Rack](docs/assets/rex-player-demo.gif)
+
 It loads `.rx2`, `.rex`, and `.rcy` files with vendored [VelociLoops](https://github.com/kunitoki/VelociLoops), displays the waveform and slice markers, maps slices to V/Oct notes, and can also run as a clocked REX timing sequencer.
 
 This was created as part of the Hermes Agent creative hackathon. It is already useful, but it is still young software. Save your Rack patches before stress-testing weird files.
