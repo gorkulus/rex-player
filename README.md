@@ -45,8 +45,6 @@ For manual/MIDI-style slice triggering:
 ## Documentation
 
 - [Manual](docs/manual.md)
-- [Release checklist](docs/release-checklist.md)
-- [Legal and licensing notes](docs/legal-and-licensing.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Changelog](CHANGELOG.md)
 
